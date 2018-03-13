@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html>
+    <!-- title -->
+
+
+
+
+
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" >
+    <title>sq的博客主页</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+        box-shadow: 0 0 3px 0 rgba(0, 0, 0, 0.7);
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s 1;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href= /css/style.css?v=20180311 as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="stylesheet" type="text/css" href= /css/mobile.css?v=20180311 media="(max-width: 980px)"/>
+    <link rel="icon" href= /assets/favicon.ico>
+    <script>
+  // load webfont-loader async, and add callback function
+  function async(u, c) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+  
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntroTags = document.getElementsByClassName('post-intro-tags')[0],
+        postIntroMeat = document.getElementsByClassName('post-intro-meta')[0];
+      if (postIntroTags) {
+        postIntroTags.classList.add('post-fade-in');
+      }
+      if (postIntroMeat) {
+        postIntroMeat.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  async("https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", asyncCb)
+</script>
+    <script>
+        (function (w) {
+            "use strict";
+            // rel=preload support test
+            if (!w.loadCSS) {
+                w.loadCSS = function () { };
+            }
+            // define on the loadCSS obj
+            var rp = loadCSS.relpreload = {};
+            // rel=preload feature support test
+            // runs once and returns a function for compat purposes
+            rp.support = (function () {
+                var ret;
+                try {
+                    ret = w.document.createElement("link").relList.supports("preload");
+                } catch (e) {
+                    ret = false;
+                }
+                return function () {
+                    return ret;
+                };
+            })();
+
+            // if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+            // then change that media back to its intended value on load
+            rp.bindMediaToggle = function (link) {
+                // remember existing media attr for ultimate state, or default to 'all'
+                var finalMedia = link.media || "all";
+
+                function enableStylesheet() {
+                    link.media = finalMedia;
+                }
+
+                // bind load handlers to enable media
+                if (link.addEventListener) {
+                    link.addEventListener("load", enableStylesheet);
+                } else if (link.attachEvent) {
+                    link.attachEvent("onload", enableStylesheet);
+                }
+
+                // Set rel and non-applicable media type to start an async request
+                // note: timeout allows this to happen async to let rendering continue in IE
+                setTimeout(function () {
+                    link.rel = "stylesheet";
+                    link.media = "only x";
+                });
+                // also enable media after 3 seconds,
+                // which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+                setTimeout(enableStylesheet, 3000);
+            };
+
+            // loop through link elements in DOM
+            rp.poly = function () {
+                // double check this to prevent external calls from running
+                if (rp.support()) {
+                    return;
+                }
+                var links = w.document.getElementsByTagName("link");
+                for (var i = 0; i < links.length; i++) {
+                    var link = links[i];
+                    // qualify links to those with rel=preload and as=style attrs
+                    if (link.rel === "preload" && link.getAttribute("as") === "style" && !link.getAttribute("data-loadcss")) {
+                        // prevent rerunning on link
+                        link.setAttribute("data-loadcss", true);
+                        // bind listeners to toggle media back
+                        rp.bindMediaToggle(link);
+                    }
+                }
+            };
+
+            // if unsupported, run the polyfill
+            if (!rp.support()) {
+                // run once at least
+                rp.poly();
+
+                // rerun poly on an interval until onload
+                var run = w.setInterval(rp.poly, 500);
+                if (w.addEventListener) {
+                    w.addEventListener("load", function () {
+                        rp.poly();
+                        w.clearInterval(run);
+                    });
+                } else if (w.attachEvent) {
+                    w.attachEvent("onload", function () {
+                        rp.poly();
+                        w.clearInterval(run);
+                    });
+                }
+            }
+            // commonjs
+            if (typeof exports !== "undefined") {
+                exports.loadCSS = loadCSS;
+            }
+            else {
+                w.loadCSS = loadCSS;
+            }
+        }(typeof global !== "undefined" ? global : this));
+    </script>
+    <script src="//cdn.staticfile.org/jquery/3.2.1/jquery.min.js" defer></script>
+    <script src="/scripts/main.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+</head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >sq_Hayden&#39;s blog</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name"></a>
+            </div>
+    </div>
+    
+    <a class="home-link" href=/>sq_Hayden's blog</a>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style=
+
+
+
+
+
+
+
+
+height:50vh;
+
+>
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            [Untitled Post]
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <!-- 文章页标签  -->
+            
+            <div class="post-intro-meta">
+                <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                <span class="post-intro-time">2018/03/12</span>
+                
+                <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                    <span class="iconfont-archer">&#xe602;</span>
+                    <span id="busuanzi_value_page_pv"></span>
+                </span>
+                
+                <span class="shareWrapper">
+                    <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                    <span class="shareText">Share</span>
+                    <ul class="shareList">
+                        <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                            <div class="share-qrcode"></div>
+                        </li>
+                        <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                        <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                        <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                        <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                    </ul>
+                </span>
+            </div>
+        
+    </div>
+</div>
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <h1 id="hexo-theme-archer"><a href="#hexo-theme-archer" class="headerlink" title="hexo-theme-archer"></a>hexo-theme-archer</h1><p><img src="./docs/snap.png" alt="preview"></p>
+<h2 id="在线预览-Online-demo"><a href="#在线预览-Online-demo" class="headerlink" title="在线预览(Online demo)"></a>在线预览(Online demo)</h2><p>🎯 主题预览：<a href="http://firework.studio/archer-demo/" target="_blank" rel="noopener">Demo</a>。</p>
+<h2 id="文档"><a href="#文档" class="headerlink" title="文档"></a>文档</h2><ul>
+<li><a href="./docs/README-en.md">English document</a></li>
+</ul>
+<ul>
+<li><a href="./docs/develop-guide-zh.md">二次开发文档</a></li>
+</ul>
+<h2 id="更新"><a href="#更新" class="headerlink" title="更新"></a>更新</h2><ul>
+<li>2017.08.17 - 『添加了置顶显示』</li>
+<li>2017.08.26 - 『添加了二次开发文档，文章页header在下滑时隐藏』</li>
+<li>2017.09.10 - 『添加了about页面』</li>
+<li>2017.09.25 - 『可以直接添加disqus，gitment及畅言了』</li>
+<li>2017.09.30 - 『添加了rss，修复了placeholder的bug，更流畅』</li>
+<li>2017.10.05 - 『添加toc，默认开启，可在配置中关闭』</li>
+<li>2017.10.16 - 『修复移动端bug，增加渐入效果』</li>
+<li>2017.12.17 - 『增加阅读进度条，在post页的顶部』</li>
+<li>2017.12.27 - 『增加<del>百度分享和</del>页面浏览量统计』</li>
+<li>2018.02.04 - 『代码重构，性能优化，样式更新，V1.0.0』</li>
+<li>2018.02.24 - 『支持显示微信和QQ二维码』</li>
+<li>2018.02.28 - 『重写分享功能，分享按钮在头图上』</li>
+<li>2018.03.04 - 『头图的高度可以自定义了，配置 _config 即可』</li>
+<li>2018.03.11 - 『toc可以根据阅读位置自动展开和收缩了』</li>
+</ul>
+<h2 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h2><ul>
+<li>本主题受<a href="https://github.com/litten/hexo-theme-yilia" target="_blank" rel="noopener">yilia</a>主题和<a href="https://github.com/Huxpro/huxpro.github.io" target="_blank" rel="noopener">huxpro</a>主题的启发，结合了前者的sidebar设计及后者的UI设计。通过sidebar能够不跳转到archive页、tag页及<strong>categories页</strong>进行导航。</li>
+<li>兼容性：现代浏览器及IE10+。</li>
+<li>有任何使用上的问题欢迎<a href="https://github.com/fi3ework/hexo-theme-archer/issues" target="_blank" rel="noopener"><strong>发起issue</strong></a>。</li>
+<li>本主题会持续维护及优化，欢迎star 😆。</li>
+</ul>
+<h2 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h2><ol>
+<li>在<strong>Hexo目录</strong>下执行</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install hexo-generator-json-content --save &amp;&amp; git clone https://github.com/fi3ework/hexo-theme-archer.git themes/archer</span><br></pre></td></tr></table></figure>
+<ol>
+<li>修改<strong>Hexo目录</strong>下的 <code>_config.yml</code> 的 <code>theme</code> 字段为 <code>archer</code></li>
+</ol>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">theme:</span> <span class="string">archer</span></span><br></pre></td></tr></table></figure>
+<ol>
+<li>添加sidebar启用支持：</li>
+</ol>
+<p>在<strong>Hexo目录</strong>下的 <code>_config.yml</code> 中添加以下字段（不是archer下的 <code>_config.yml</code>）</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">jsonContent:</span></span><br><span class="line"><span class="attr">  meta:</span> <span class="literal">true</span></span><br><span class="line"><span class="attr">  pages:</span> <span class="literal">false</span></span><br><span class="line"><span class="attr">  posts:</span></span><br><span class="line"><span class="attr">    title:</span> <span class="literal">true</span></span><br><span class="line"><span class="attr">    date:</span> <span class="literal">true</span></span><br><span class="line"><span class="attr">    path:</span> <span class="literal">true</span></span><br><span class="line"><span class="attr">    text:</span> <span class="literal">false</span></span><br><span class="line"><span class="attr">    raw:</span> <span class="literal">false</span></span><br><span class="line"><span class="attr">    content:</span> <span class="literal">false</span></span><br><span class="line"><span class="attr">    slug:</span> <span class="literal">false</span></span><br><span class="line"><span class="attr">    updated:</span> <span class="literal">false</span></span><br><span class="line"><span class="attr">    comments:</span> <span class="literal">false</span></span><br><span class="line"><span class="attr">    link:</span> <span class="literal">false</span></span><br><span class="line"><span class="attr">    permalink:</span> <span class="literal">true</span></span><br><span class="line"><span class="attr">    excerpt:</span> <span class="literal">false</span></span><br><span class="line"><span class="attr">    categories:</span> <span class="literal">true</span></span><br><span class="line"><span class="attr">    tags:</span> <span class="literal">true</span></span><br></pre></td></tr></table></figure>
+<h2 id="可选配置"><a href="#可选配置" class="headerlink" title="可选配置"></a>可选配置</h2><ul>
+<li><a href="https://github.com/fi3ework/hexo-theme-archer/wiki/%E5%90%AF%E7%94%A8about%E9%A1%B5" target="_blank" rel="noopener">启用about页</a></li>
+<li><a href="https://github.com/fi3ework/hexo-theme-archer/wiki/%E5%90%AF%E7%94%A8404%E9%A1%B5" target="_blank" rel="noopener">启用404页</a></li>
+<li><a href="https://github.com/fi3ework/hexo-theme-archer/wiki/%E5%90%AF%E7%94%A8rss" target="_blank" rel="noopener">启用rss订阅</a></li>
+<li><a href="https://github.com/fi3ework/hexo-theme-archer/wiki/%E8%87%AA%E5%AE%9A%E4%B9%89%E6%96%87%E7%AB%A0%E9%A1%B5%E5%A4%B4%E5%9B%BE" target="_blank" rel="noopener">自定义单独文章页头图</a></li>
+<li><a href="https://github.com/fi3ework/hexo-theme-archer/wiki/%E6%9B%B4%E6%94%B9%E4%B8%BB%E9%A2%98%E9%A2%9C%E8%89%B2" target="_blank" rel="noopener">自定义主题颜色</a></li>
+<li><a href="http://xxxsss.me/2017/04/22/hexo-pagination/" target="_blank" rel="noopener">置顶文章</a></li>
+</ul>
+<h2 id="主题配置"><a href="#主题配置" class="headerlink" title="主题配置"></a>主题配置</h2><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># ========== 资料栏 ========== #</span></span><br><span class="line"><span class="comment"># 头像路径</span></span><br><span class="line"><span class="attr">avatar:</span></span><br><span class="line"><span class="comment"># 博主名字，不填写该字段则默认采用Hexo配置文件中的author字段</span></span><br><span class="line"><span class="attr">author:</span></span><br><span class="line"><span class="comment"># 博客签名</span></span><br><span class="line"><span class="attr">signature:</span></span><br><span class="line"><span class="comment"># 社交账号</span></span><br><span class="line"><span class="attr">social:</span></span><br><span class="line"><span class="attr">  email:</span></span><br><span class="line"><span class="attr">  github:</span></span><br><span class="line">  <span class="comment"># wechat 和 qq 需要填写二维码图片的路径</span></span><br><span class="line"><span class="attr">  wechat:</span></span><br><span class="line"><span class="attr">  qq:</span></span><br><span class="line"><span class="attr">  weibo:</span></span><br><span class="line"><span class="attr">  zhihu:</span></span><br><span class="line"><span class="attr">  douban:</span></span><br><span class="line"><span class="attr">  facebook:</span></span><br><span class="line"><span class="attr">  twitter:</span></span><br><span class="line"><span class="attr">  instagram:</span></span><br><span class="line"><span class="attr">  stack-overflow:</span></span><br><span class="line"><span class="attr">  v2ex:</span></span><br><span class="line"><span class="attr">  linkedin:</span></span><br><span class="line"><span class="attr">  blog:</span></span><br><span class="line"><span class="attr">  others:</span></span><br><span class="line"><span class="attr">  rss:</span> <span class="string">/atom.xml</span></span><br><span class="line"><span class="comment"># 友链</span></span><br><span class="line"><span class="attr">friends:</span></span><br><span class="line"><span class="attr">  friendA:</span></span><br><span class="line"><span class="attr">  friendB:</span></span><br><span class="line"><span class="attr">  friendC:</span></span><br><span class="line"><span class="comment"># about页面</span></span><br><span class="line"><span class="attr">about:</span></span><br><span class="line">  <span class="comment"># 是否启用about页</span></span><br><span class="line"><span class="attr">  enable:</span> <span class="literal">true</span></span><br><span class="line">  <span class="comment"># about页头图</span></span><br><span class="line"><span class="attr">  image:</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># ========== 站点 ========== #</span></span><br><span class="line"><span class="comment"># 网站的title，每篇文章后面也会加上此字段利于SEO</span></span><br><span class="line"><span class="attr">SEO_title:</span></span><br><span class="line"><span class="comment"># 显示在网站头图上的主标题</span></span><br><span class="line"><span class="attr">main_title:</span> </span><br><span class="line"><span class="comment"># 显示在网站头图上的副标题</span></span><br><span class="line"><span class="attr">subtitle:</span></span><br><span class="line"><span class="comment"># 主页头图</span></span><br><span class="line"><span class="attr">header_image:</span></span><br><span class="line"><span class="comment"># 文章页默认头图</span></span><br><span class="line"><span class="attr">post_header_image:</span></span><br><span class="line"><span class="comment"># 404页头图</span></span><br><span class="line"><span class="attr">_404_image:</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># ========== 评论插件 ========== #</span></span><br><span class="line"><span class="comment"># 目前支持直接添加Livere，Disqus，Gitment，畅言及友言，填写插件对应的字段即可启用。</span></span><br><span class="line"><span class="comment"># 如果想添加其他评论插件，在custom.ejs中添加即可。</span></span><br><span class="line"><span class="attr">comment:</span></span><br><span class="line">  <span class="comment"># Livere 官网：https://livere.com/</span></span><br><span class="line"><span class="attr">  livere_uid:</span></span><br><span class="line">  <span class="comment"># Disqus 官网：https://disqus.com/</span></span><br><span class="line"><span class="attr">  disqus_shortname:</span></span><br><span class="line">  <span class="comment"># 畅言 官网：http://changyan.kuaizhan.com/</span></span><br><span class="line"><span class="attr">  changyan_appid:</span></span><br><span class="line"><span class="attr">  changyan_conf:</span></span><br><span class="line">  <span class="comment"># Gitment 官网：https://github.com/imsun/gitment</span></span><br><span class="line"><span class="attr">  gitment_owner:</span></span><br><span class="line"><span class="attr">  gitment_repo:</span></span><br><span class="line"><span class="attr">  gitment_client_id:</span></span><br><span class="line"><span class="attr">  gitment_client_secret:</span></span><br><span class="line">  <span class="comment"># 友言 官网: http://www.uyan.cc/</span></span><br><span class="line"><span class="attr">  youyan_uid:</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># ========== 统计 ========== #</span></span><br><span class="line"><span class="comment"># 是否开启不蒜子阅读量统计</span></span><br><span class="line"><span class="attr">busuanzi:</span> <span class="literal">true</span></span><br><span class="line"><span class="comment"># 百度统计(填写siteID)</span></span><br><span class="line"><span class="attr">baidu_analytics:</span></span><br><span class="line"><span class="comment"># Google统计(填写siteID)</span></span><br><span class="line"><span class="attr">google_analytics:</span></span><br><span class="line"><span class="comment"># CNZZ统计</span></span><br><span class="line"><span class="attr">CNZZ_analytics:</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># ========== 其他 ========== #</span></span><br><span class="line"><span class="comment"># favicon</span></span><br><span class="line"><span class="attr">favicon:</span></span><br><span class="line"><span class="comment"># 首页的文章摘要字数(默认300，填0则不显示摘要)</span></span><br><span class="line"><span class="attr">truncate_length:</span></span><br><span class="line"><span class="comment"># enable toc</span></span><br><span class="line"><span class="attr">toc:</span> <span class="literal">true</span></span><br><span class="line"><span class="comment"># intro height (默认是屏幕高度的50%, 可以直接输入其他数字)</span></span><br><span class="line"><span class="attr">index_intro_height:</span> <span class="number">50</span></span><br><span class="line"><span class="attr">post_intro_height:</span> <span class="number">50</span></span><br><span class="line"><span class="attr">about_intro_height:</span> <span class="number">50</span></span><br></pre></td></tr></table></figure>
+<h2 id="License"><a href="#License" class="headerlink" title="License"></a>License</h2><p>MIT</p>
+
+    </article>
+    <!-- 前后页  -->
+    <ul class="post-paginator">
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2018/03/12/my-first-blog/" title= 博客启程之路 >
+                    <div class="prevTitle">博客启程之路</div>
+                </a>
+            
+        </li>
+        <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href= "/2018/03/13/activity/" title= Activity生命周期详解 >
+                    <div class="nextTitle">Activity生命周期详解</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+<!-- City版安装代码已完成 -->
+    
+    
+    <!--PC版-->
+
+    <!--PC版-->
+
+
+    
+    <!-- 评论 -->
+</main>
+
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:1365233121@qq.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/sqhayden" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+            
+                <span class="iconfont-archer wechat" title=wechat>
+                  
+                  <img class="profile-qr" src="/assets/example_qr.jpg" />
+                </span>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+    </div>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- 不蒜子  -->
+    
+    <div class="busuanzi-container">
+        <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span>
+        </span>
+    </div>
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:50vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#hexo-theme-archer"><span class="toc-number">1.</span> <span class="toc-text">hexo-theme-archer</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#在线预览-Online-demo"><span class="toc-number">1.1.</span> <span class="toc-text">在线预览(Online demo)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#文档"><span class="toc-number">1.2.</span> <span class="toc-text">文档</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#更新"><span class="toc-number">1.3.</span> <span class="toc-text">更新</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#说明"><span class="toc-number">1.4.</span> <span class="toc-text">说明</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#安装"><span class="toc-number">1.5.</span> <span class="toc-text">安装</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#可选配置"><span class="toc-number">1.6.</span> <span class="toc-text">可选配置</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#主题配置"><span class="toc-number">1.7.</span> <span class="toc-text">主题配置</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#License"><span class="toc-number">1.8.</span> <span class="toc-text">License</span></a></li></ol></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">文章</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">标签</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">类别</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-archive"> Total : 4 </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2018 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/13</span><a class="archive-post-title" href= "/2018/03/13/activity/" >Activity生命周期详解</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/12</span><a class="archive-post-title" href= "/2018/03/12/my-first-blog/" >博客启程之路</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/12</span><a class="archive-post-title" href= "/2018/03/12/README/" >[Untitled Post]</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/12</span><a class="archive-post-title" href= "/2018/03/12/hello-world/" >Hello World</a>
+        </li>
+    
+    </div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br/>
+    1、请确保node版本大于6.2<br/>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br/>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br/>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+    </div>
+</div> 
+
+    <script>
+    var siteMeta = {
+        root: '/',
+        author: 'hayden'
+    }
+</script>
+    <!-- busuanzi  -->
+    
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+    
+    </body>
+</html>
+
+
