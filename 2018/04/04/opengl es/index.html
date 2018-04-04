@@ -9,7 +9,7 @@
 <head>
     <meta http-equiv="content-type" content="text/html; charset=utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" >
-    <title>sq的博客主页</title>
+    <title>OpenGL ES实现3D星空背景旋转立方体 · sq的博客主页</title>
     <style type="text/css">
     @font-face {
         font-family: 'Oswald-Regular';
@@ -251,14 +251,23 @@
 </head>
 
     
-        <body class="home-body">
+        <body class="post-body">
     
     
-<header class="header index-header">
+<header class="header">
 
     <div class="read-progress"></div>
     <div class="header-sidebar-menu">&#xe775;</div>
     <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >sq_Hayden&#39;s blog</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">OpenGL ES实现3D星空背景旋转立方体</a>
+            </div>
+    </div>
     
     <a class="home-link" href=/>sq_Hayden's blog</a>
 </header>
@@ -279,17 +288,17 @@ height:50vh;
     <!-- 主页  -->
     
     
-    <!-- 文章页  -->
+    <!-- 404页  -->
             
-    <div class="site-intro-img" style="background-image: url(/intro/index-bg.jpg)"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
     <div class="site-intro-placeholder"></div>
     <div class="site-intro-meta">
         <!-- 标题  -->
         <h1 class="intro-title">
             <!-- 主页  -->
             
-            sq_Hayden's blog
-            <!-- 文章页  -->
+            OpenGL ES实现3D星空背景旋转立方体
+            <!-- 404 -->
             
         </h1>
         <!-- 副标题 -->
@@ -297,249 +306,114 @@ height:50vh;
             <!-- 主页副标题  -->
             
             
-                the fittest will survive,the weak just don't eat.
-            
-            <!-- 文章页  -->
+            <!-- 404 -->
             
         </p>
         <!-- 文章页meta -->
+        
+            <!-- 文章页标签  -->
+            
+            <div class="post-intro-meta">
+                <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                <span class="post-intro-time">2018/04/04</span>
+                
+                <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                    <span class="iconfont-archer">&#xe602;</span>
+                    <span id="busuanzi_value_page_pv"></span>
+                </span>
+                
+                <span class="shareWrapper">
+                    <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                    <span class="shareText">Share</span>
+                    <ul class="shareList">
+                        <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                            <div class="share-qrcode"></div>
+                        </li>
+                        <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                        <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                        <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                        <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                    </ul>
+                </span>
+            </div>
         
     </div>
 </div>
         <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
 
         <div class="container container-unloaded">
-            <main class="main index-page">
+            <main class="main post-page">
+    <article class="article-entry">
+        <h1 id="OpenGL-ES实现3D星空背景旋转立方体"><a href="#OpenGL-ES实现3D星空背景旋转立方体" class="headerlink" title="OpenGL ES实现3D星空背景旋转立方体"></a><center>OpenGL ES实现3D星空背景旋转立方体</center></h1><blockquote>
+<ul>
+<li>引言：在androi开发中，如果需要去实现某些3D绘制效果，那就不得不提到OpenGL ES，利用它我们可以较完美的完成多种3D图形的绘制操作，以及关于3D的动画效果实现。</li>
+</ul>
+</blockquote>
+<hr>
+<p>本次的目标，是实现如下所示的3D绘制效果，怎么样去做呢？</p>
+<center><img src="https://raw.githubusercontent.com/sqHayden/sqHayden.github.io/master/avatar/3D.gif" alt="activity"></center>
+
+<hr>
+<h2 id="OpenGL-ES-简介"><a href="#OpenGL-ES-简介" class="headerlink" title="OpenGL ES 简介"></a>OpenGL ES 简介</h2><p>OpenGL ES (OpenGL for Embedded Systems) 是 OpenGL 三维图形 API 的子集，为针对手机、PDA和游戏主机等嵌入式设备而设计。Android包括支持高性能2d和3d图形以及开放图形库(OpenGL),具体来说，即OpenGL是一个跨平台图形API,用于指定一个标准为3 d图形处理硬件的软件接口。</p>
+<h2 id="OpenGL-ES-方法介绍"><a href="#OpenGL-ES-方法介绍" class="headerlink" title="OpenGL ES 方法介绍"></a>OpenGL ES 方法介绍</h2><p>在Android平台上实现OpenGL的view绘制其实很简单，Android为我们提供了两个类来完成图像相关的绘制工作，那就是<code>GLSurfaceView</code>和<code>GLSurfaceView.Renderer</code>。</p>
+<blockquote>
+<ul>
+<li>GLSurfaceView<br>  这是一个视图类，GLSurfaceView是用来连接OpenGL ES和android本身的view结构的。一般来说，我们需要去继承它并在其构造函数中，进行图形相关参数的初始化操作。</li>
+</ul>
+</blockquote>
+<p>那么，如何去引用呢？类似这样：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1</span>.创建自定义视图类，用于UI展示</span><br><span class="line">   <span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MySurfaceView</span> <span class="keyword">extends</span> <span class="title">GLSurfaceView</span> </span>&#123;&#125;</span><br><span class="line"><span class="number">2</span>.进行UI的Set操作</span><br><span class="line">   MySurfaceView mGLSurfaceView = <span class="keyword">new</span> MySurfaceView(<span class="keyword">this</span>);</span><br><span class="line">   setContentView(mGLSurfaceView);</span><br></pre></td></tr></table></figure></p>
+<blockquote>
+<ul>
+<li>public void setRenderer(GLSurfaceView.Renderer renderer)<br> Renderer也叫渲染器,是一个接口，位于GLSurfaceView类中。我们同样也需要去自定义一个类实现它的三大方法，从而管理整个3D视图的渲染周期。<ul>
+<li>onSurfaceCreated()：创建GLSurfaceView时回调。使用这个方法来执行操作,只需要发生一次,如设置OpenGL环境参数或初始化OpenGL图形对象。也会设置一些绘制时不常变化的参数，比如：背景色，是否打开 z-buffer等。</li>
+<li>onDrawFrame()：每绘制一帧的时由系统自动回调执行，在底层的渲染周期内，将会一直持续调用此方法来实现图像的动态改变。</li>
+<li>onSurfaceChanged()：GLSurfaceView几何变化时回调，包括GLSurfaceView大小的变化或设备的屏幕变换。</li>
+</ul>
+</li>
+</ul>
+</blockquote>
+<p>我们需要将自定义的渲染器对象Renderer在MySurfaceView对象创建时，通过构造器来完成绑定：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//对象传递</span></span><br><span class="line">setRenderer(mRenderer);</span><br><span class="line"><span class="comment">//设置为自动模式以完成系统在帧绘制时，持续调用Renderer的onDrawFrame()方法</span></span><br><span class="line">setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);</span><br></pre></td></tr></table></figure></p>
+<h2 id="OpenGL-ES-正方体绘制"><a href="#OpenGL-ES-正方体绘制" class="headerlink" title="OpenGL ES 正方体绘制"></a>OpenGL ES 正方体绘制</h2><p>一般来说，绘制一个正方体，我们只需要知道其坐标原点以及八个顶点坐标即可。在本次绘制中，我们采用一个int数组用来存储构成正方体六个面的24个三维点坐标，同时采用一种规则使它们联系起来，拼接成一个完全的正方体。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//坐标代码（等价于1.0f）</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">int</span> one = <span class="number">0x00010000</span>;</span><br><span class="line"><span class="comment">// 正方体顶点</span></span><br><span class="line"> <span class="keyword">private</span> <span class="keyword">int</span>[] vertices = &#123;</span><br><span class="line"> 【！！！此处的点坐标必须是有序的，具体规则参考下面描述！！！】</span><br><span class="line">    <span class="comment">//右</span></span><br><span class="line">    one,-one,one,</span><br><span class="line">    one,one,one,</span><br><span class="line">    one,-one,-one,</span><br><span class="line">    one,one,-one,</span><br><span class="line">    <span class="comment">//左</span></span><br><span class="line">    -one,-one,one,</span><br><span class="line">    -one,one,one,</span><br><span class="line">    -one,-one,-one,</span><br><span class="line">    -one,one,-one,</span><br><span class="line">    <span class="comment">//下</span></span><br><span class="line">    -one,-one,one,</span><br><span class="line">    one,-one,one,</span><br><span class="line">    -one,-one,-one,</span><br><span class="line">    one,-one,-one,</span><br><span class="line">    <span class="comment">//上</span></span><br><span class="line">    one,one,one,</span><br><span class="line">    -one,one,one,</span><br><span class="line">    one,one,-one,</span><br><span class="line">    -one,one,-one,</span><br><span class="line">    <span class="comment">//前</span></span><br><span class="line">    -one,-one,one,</span><br><span class="line">    -one,one,one,</span><br><span class="line">    one,-one,one,</span><br><span class="line">    one,one,one,</span><br><span class="line">    <span class="comment">//后</span></span><br><span class="line">    -one,-one,-one,</span><br><span class="line">    -one,one,-one,</span><br><span class="line">    one,-one,-one,</span><br><span class="line">    one,one,-one</span><br><span class="line"> &#125;;</span><br></pre></td></tr></table></figure></p>
+<p>在本次的点坐标数组排序中，0x10000是出于OPENGL前期内存节约的考虑，以INT型模拟FLOAT型来表示，0x 0001 0000 前面4位表示小数点前，后4位表示小数点后，所以0x10000表示浮点数的1.0f。</p>
+<blockquote>
+<ul>
+<li>GL_TRIANGLE_STRIP模式介绍<br>在OPenGL ES 中，面的绘制并不是由一个四点平面进行绘制的，而是由多个三角形依照不同规则进行拼接，用以形成一个平面。此处我们采用<code>GL_TRIANGLE_STRIP</code>模式，来完成正方的六个面绘制。<br> <img src="https://raw.githubusercontent.com/sqHayden/sqHayden.github.io/master/avatar/3DPoint.png" alt="activity"><br>如上图所示，假设此正方形是物体的上表面，且已知对应四个坐标点，那么为了避免重复绘制或者乱序绘制，我们需要对这四个三维坐标进行排序定义，之后调用<code>GL_TRIANGLE_STRIP</code>模式自动处理，就可以绘制出上表面。<br><code>GL_TRIANGLE_STRIP</code>模式即<code>连续三角绘制</code>，意味着它总是以连续的三个点绘制出一个三角形。<br>此处若定义为{v0,v1,v2,v3},则会按照{0,1,2}和{1,2,3}绘制出两个三角形，且正好拼凑出上表面。假设我们定义为{v0,v1,v3,v2},则按照{0,1,3}和{1,3,2}绘制出了一个互相覆盖的多边形导致绘制失败。<br>因此，我们在定义六个面的顶点坐标时，需要遵循一个规则：若以任一点作为起始绘制点，则其对角点必须作为最后一个定义点。</li>
+</ul>
+</blockquote>
+<p>好了，定义好了坐标，我们就可以观察到一个正方体出现在了我们的视野中。不过此时由于遮挡效果，我们只能看到一个2D的平面图形，为了好看一些，先给它加入颜色索引，并对其进行三维的自旋操作，此时就可以较为清晰地观察到它的状态了：<br>    <center><img src="https://raw.githubusercontent.com/sqHayden/sqHayden.github.io/master/avatar/color3D.gif" alt="activity"></center></p>
+<p>好了，暂时就先写到这里，以后再更新。</p>
+
+    </article>
+    <!-- 前后页  -->
+    <ul class="post-paginator">
+        <li class="previous">
+            
+                <div class="prevSlogan">前一篇</div>
+                <a href= "/2018/03/28/activity/" title= Activity生命周期详解 >
+                    <div class="prevTitle">Activity生命周期详解</div>
+                </a>
+            
+        </li>
+        <li class="next">
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+<!-- City版安装代码已完成 -->
     
     
-    
-        <article class="index-post">
-            <a class="abstract-title" href = "/2018/04/04/opengl es/" >
-                
-                    <span>OpenGL ES实现3D星空背景旋转立方体</span>
-            </a>
-            <div class="abstract-content">
-                OpenGL ES实现3D星空背景旋转立方体
+    <!--PC版-->
 
-引言：在androi开发中，如果需要去实现某些3D绘制效果，那就不得不提到OpenGL ES，利用它我们可以较完美的完成多种3D图形的绘制操作，以及关于3D的动画效果实现。
-
-
-
-本次的目标，是实现如下所示的3D绘制效果，怎么样去做呢？
-
-
-
-OpenGL ES 简介OpenGL ES (OpenGL for Embedded Systems) 是 OpenGL 三维图形 API 的子集，为针对手机、PDA和游戏主机等嵌入式设备而设计。Android包括支持高性能2d和3d图形以及开放图形库(OpenGL),具体来说，即OpenGL是一个跨...
-            </div>
-            <div class="abstract-post-meta">
-                <!-- date  -->
-                <div class="abstract-date">
-                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2018/04/04</span>
-                </div>
-                <!-- tags  -->
-                
-            </div>
-        </article>
-    
-    
-    
-        <article class="index-post">
-            <a class="abstract-title" href = "/2018/03/28/activity/" >
-                
-                    <span>Activity生命周期详解</span>
-            </a>
-            <div class="abstract-content">
-                Activity生命周期详解什么是Activity？　　众所周知，Activity是android四大组件之首，在开发中要想在前台进程中与各个UI控件进行交互的话，就必然离不开Activity的使用，那么，先来看看在android官方文档中，是如何对Activity进行定义的。
-
-官方说明如下：
-
-An activity is a single, focused thing that the user can do.  Almost all activities interact with the user, so the Activity class takes care of cre...
-            </div>
-            <div class="abstract-post-meta">
-                <!-- date  -->
-                <div class="abstract-date">
-                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2018/03/28</span>
-                </div>
-                <!-- tags  -->
-                
-            </div>
-        </article>
-    
-    
-    
-        <article class="index-post">
-            <a class="abstract-title" href = "/2018/03/12/README/" >
-                
-                    <span>[Untitled Post]</span>
-            </a>
-            <div class="abstract-content">
-                hexo-theme-archer
-在线预览(Online demo)🎯 主题预览：Demo。
-文档
-English document
+    <!--PC版-->
 
 
-二次开发文档
-
-更新
-2017.08.17 - 『添加了置顶显示』
-2017.08.26 - 『添加了二次开发文档，文章页header在下滑时隐藏』
-2017.09.10 - 『添加了about页面』
-2017.09.25 - 『可以直接添加disqus，gitment及畅言了』
-2017.09.30 - 『添加了rss，修复了placeholder的bug，更流畅』
-2017.10.05 - 『添加toc，默认开启，可在配置中关闭』
-2017.1...
-            </div>
-            <div class="abstract-post-meta">
-                <!-- date  -->
-                <div class="abstract-date">
-                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2018/03/12</span>
-                </div>
-                <!-- tags  -->
-                
-            </div>
-        </article>
     
-    
-    
-        <article class="index-post">
-            <a class="abstract-title" href = "/2018/03/12/my-first-blog/" >
-                
-                    <span>博客启程之路</span>
-            </a>
-            <div class="abstract-content">
-                这是我的第一篇博客.
-大标题1小标题11$ 第一个小条目
-更多信息: 点击1
-小标题21$ 第二个小条目
-先试试: 点击2
-小标题31$ 第三个小条目
-还有什么: 点击3
-小标题41$ 第四个小条目
-发布: 点击4
-
-            </div>
-            <div class="abstract-post-meta">
-                <!-- date  -->
-                <div class="abstract-date">
-                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2018/03/12</span>
-                </div>
-                <!-- tags  -->
-                
-            </div>
-        </article>
-    
-    
-    
-        <article class="index-post">
-            <a class="abstract-title" href = "/2018/03/12/hello-world/" >
-                
-                    <span>Hello World</span>
-            </a>
-            <div class="abstract-content">
-                Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hexo, you can find the answer in troubleshooting or you can ask me on GitHub.
-Quick StartCreate a new post1$ hexo new "My New Post"
-More info: Writing
-Run server1$ hexo server
-More...
-            </div>
-            <div class="abstract-post-meta">
-                <!-- date  -->
-                <div class="abstract-date">
-                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2018/03/12</span>
-                </div>
-                <!-- tags  -->
-                
-            </div>
-        </article>
-    
-    <!-- paginator  -->
-    
+    <!-- 评论 -->
 </main>
-            <!-- profile -->
-            
-            <div class="profile">
-    <img class="profile-avatar" src= /avatar/Misaka.jpg >
-    <div class="profile-name">sq_hayden</div>
-    
-    
-    <div class="profile-social">
-        
-    
-        
-            
-                <a href="mailto:1365233121@qq.com" class="iconfont-archer email" title=email ></a>
-            
-        
-    
-        
-            
-                <a href="//github.com/sqhayden" class="iconfont-archer github" target="_blank" title=github></a>
-            
-        
-    
-        
-            
-                <span class="iconfont-archer wechat" title=wechat>
-                  
-                  <img class="profile-qr" src="/assets/example_qr.jpg" />
-                </span>
-            
-        
-    
-        
-    
-        
-    
-        
-    
-        
-    
-        
-    
-        
-    
-        
-    
-        
-    
-        
-    
-        
-    
-        
-    
-        
-    
 
-    </div>
-    
-    
-        <div class="friends">
-            <div>FRIENDS</div>
-            
-                
-                    <span>
-                        <a href= //www.baidu.com target="_black">friendA</a>
-                    </span>
-                
-            
-                
-                    <span>
-                        <a href= //www.google.com target="_black">friendB</a>
-                    </span>
-                
-            
-                
-            
-        </div>
-    
-    
-        <div class="about-me">
-            <a href = "/about" >ABOUT ME</a>
-        </div>
-    
-</div>
+            <!-- profile -->
             
         </div>
         <footer class="footer footer-unloaded">
@@ -610,6 +484,24 @@ More...
 </footer>
     </div>
     <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:50vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#OpenGL-ES实现3D星空背景旋转立方体"><span class="toc-number">1.</span> <span class="toc-text">OpenGL ES实现3D星空背景旋转立方体</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#OpenGL-ES-简介"><span class="toc-number">1.1.</span> <span class="toc-text">OpenGL ES 简介</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#OpenGL-ES-方法介绍"><span class="toc-number">1.2.</span> <span class="toc-text">OpenGL ES 方法介绍</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#OpenGL-ES-正方体绘制"><span class="toc-number">1.3.</span> <span class="toc-text">OpenGL ES 正方体绘制</span></a></li></ol></li></ol>
+    </div>
     
     <div class="back-top iconfont-archer">&#xe639;</div>
     <div class="sidebar sidebar-hide">
@@ -773,6 +665,8 @@ jsonContent:
     
     </div>
     <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
     
     </body>
 </html>
