@@ -315,7 +315,7 @@ height:50vh;
             
             <div class="post-intro-meta">
                 <span class="post-intro-calander iconfont-archer">&#xe676;</span>
-                <span class="post-intro-time">2018/03/28</span>
+                <span class="post-intro-time">2018/05/16</span>
                 
                 <span id="busuanzi_container_page_pv" class="busuanzi-pv">
                     <span class="iconfont-archer">&#xe602;</span>
@@ -360,14 +360,14 @@ height:50vh;
 </li>
 </ul>
 <p>　　从上面的文档可以看出，Activity是与用户进行交互的一项活动，它负责去创建一个窗口，并可以在其中使用 setContentView（View　view） 去放置我们的布局UI。通常可以通过继承Activity，对其中的某些方法进行重写来完成自己所需要的操作。几乎所有的Activity都有两种方法需要去实现：</p>
-<p>　　<code>onCreate（Bundle bundle）</code><br><br>　　此方法是初始化用户活动的地方。最重要的是，在这里通常会使用定义UI的布局资源调用 setContentView（int id） ，并使用 findViewById（int id） 来检索该UI中需要以编程方式进行交互的小部件。<br><br>　　<code>onPause（）</code><br><br>　　此方法是处理用户离开活动的地方。最重要的是，此时用户所做的对任何持久性数据的更改都应该尽可能的完成，因为接下来activity在返回之前将不会被恢复。<br><br>　　简单了解Activity之后，步入正题，一起来看看Activity的整个生命周期过程是如何进行的。下图便是最为经典的Activity生命周期的详细过程，通过它，可以较为清晰地理解Activity相关的具体生命周期。<br>　　<center><img src="https://raw.githubusercontent.com/sqHayden/sqHayden.github.io/master/avatar/activity.png" alt="activity"></center><br></p>
-<h2 id="Activity的常见生命周期"><a href="#Activity的常见生命周期" class="headerlink" title="Activity的常见生命周期"></a>Activity的常见生命周期</h2><p>　　实践是检验真理性的唯一标准，话不多说，直接上代码，一起来看看下边的Activity在从启动到销毁的过程中，都经历了哪些过程。<br>　　　<center><img src="https://raw.githubusercontent.com/sqHayden/sqHayden.github.io/master/avatar/codeActivityLife.png" alt="activity"></center><br><br>　　代码运行结果如下：　　　<br>　　　<center><img src="https://raw.githubusercontent.com/sqHayden/sqHayden.github.io/master/avatar/codeActivityResult.png" alt="activity"></center><br><br>　　从上边的运行结果可以看出，一个Activity正常的从创建到销毁，其生命周期的走向是：<br><br>　　　　　　onCreate() –&gt;onStart() –&gt;onResume() –&gt;onPause() –&gt;onStop() –&gt;onDestory()<br><br>　　下面，便让我们一起来看看这几大生命周期各自所代表的作用：<br><br>　　　　<font color="red" size="3">1. void onCreate(Bundle savedInstanceState)</font><br><br>　　　　当我们首次加载一个新创建的Activity时，此方法将会被首先执行。另外，如果当前的Activity被销毁（执行了 onDestroy() 方法），再重新加载进Task时，onCreate() 事件也会被重新执行。 onCreate() 方法中的参数<code>Bundle</code>对象，其作用是为了实现两个Activity之间的信息传输，将要传输的信息储存于Bundle，并通过Intent进行传递便可以实现Activity之间的通讯。<br><br>　　　　<font color="red" size="3">2. void onStart( )</font><br><br>　　　　此方法在 onCreate() 之后执行，当Activity变为在屏幕上对用户可见时调用。或者当前窗体被交换到后台一段时间并且此Activity并未被销毁时，如果用户再次查看此Activity，将会跳过 onCreate() ，直接再次去执行 onStart() 方法。<br><br>　　　　<font color="red" size="3">3. void onResume( )</font><br><br>　　　　此方法在用户获取到焦点，或者Activity开始与用户进行交互时调用，无论是新创建还是当一个已存在的Activity重新成为前台进程时，该方法都会被执行。此方法适用于在Activity被重新唤醒时，做一些数据的恢复处理以及资源的重新加载。<br><br>　　　　<font color="red" size="3">4. void onPause( )</font><br><br>　　　　当一个前台的Activity进程被部分遮挡或者完全不可见时，该方法会被调用【完全不可见时也会接着执行 onStop() 方法】。举个简单例子，当我们的前台Activity被半透明的Dialog所遮挡，或者被新启动的Activity完全遮盖的时候，就会导致 onPause() 方法的执行。也就是说，只要Activity仍然部分可见，但是当下Activity并不可操作，它就处在 onPause() 中了。此方法适用于去保存用户当前所用资源的现有进度，或者结束一些当前正在进行的任务。这样，一来不会占用系统资源，二来可通过 onResume() 方法，恢复自己在此刻所保存的一些进度数据。<br><br>　　　　<font color="red" size="3">5. void onStop( )</font><br><br>　　　　当一个Activity被置入后台或者被其它Activity完全遮盖而变为不可见状态的时候，此方法将会被调用。另外，若此活动被意外终止或者手动销毁时，也会执行此方法。当此方法被执行时，意味着我们应当将自己活动中的各项任务终止，并且应该释放那些不再需要的所有资源，<br>从而避免内存的泄露。<br><br>　　　　<font color="red" size="3">6. void onDestory( )</font><br><br>　　　　当Activity被彻底销毁时，将会执行此方法。在此方法中，我们应该去对各类线程、对象，进行彻底的回收操作，从而使这个活动被完全的销毁回收。<br><br>　　以上便是Activity中常用的七大周期，除此之外，还有三个周期方法也需要我们去多多掌握，从而在开发的过程中，变得游刃有余。</p>
-<h2 id="Activity的周期拓展"><a href="#Activity的周期拓展" class="headerlink" title="Activity的周期拓展"></a>Activity的周期拓展</h2><p>　　接下来要介绍的三个方法，在Activity中虽然不是非常常见，但有时在日常的某些功能开发中，却有着很重要的作用。下面，就一起来看看这三个方法具体的功能吧。<br>　　　<center><img src="https://raw.githubusercontent.com/sqHayden/sqHayden.github.io/master/avatar/codeActivityExtra.png" alt="activity"></center><br><br>　　<font color="red" size="3">1. void onRestart( )</font><br><br>　　当我们将不可见的Activity从 onStop() 状态唤醒时，会去调用 onRestart() 方法，该方法优先于再次获得运行的 onStart() 方法，运行完 onRestart() 之后运行会再次执行 onStart() 。即当我们将Activity先从前台置入后台或将其覆盖后，通过摁返回键或者菜单栏将其唤醒到前台时，该Activity将会去执行此方法。<br><br>　　<font color="red" size="3">2. void onSaveInstanceState(Bundle outState)</font><br><br>　　此方法的调用时机并没有一个很明确的执行规则，可以这么说，当系统在不能确定当前Activity是否会被销毁的时候，就会回调此方法，保存我们的相关数据，从而使Activity在被不正常销毁的时候，能够留下销毁前保存的数据供以后再次调用。<br><br>　　当Activity生命周期结束且需要保存状态时，便会使用此方法其中的参数<code>outState</code>，将数据通过键值对的形式保存在这个对象Bundle中。而当我们需要恢复这些数据时， 可以回过头来看看 <code>onCreate(Bundle savedInstanceState)</code> 方法，一看它的参数名字，想必也明白了吧，可以通过此参数去获得我们当时保存的数据。<br><br>　　  下面列出几种 onSaveInstanceState() 调用的时机:  　 </p>
+<p>　　<code>onCreate（Bundle bundle）</code><br><br>　　此方法是初始化用户活动的地方。最重要的是，在这里通常会使用定义UI的布局资源调用 setContentView（int id） ，并使用 findViewById（int id） 来检索该UI中需要以编程方式进行交互的小部件。<br><br>　　<code>onPause（）</code><br><br>　　此方法是处理用户离开活动的地方。最重要的是，此时用户所做的对任何持久性数据的更改都应该尽可能的完成，因为接下来activity在返回之前将不会被恢复。<br><br>　　简单了解Activity之后，步入正题，一起来看看Activity的整个生命周期过程是如何进行的。下图便是最为经典的Activity生命周期的详细过程，通过它，可以较为清晰地理解Activity相关的具体生命周期。<br>　　<center><img src="https://raw.githubusercontent.com/sqHayden/sqHayden.github.io/master/avatar/activity/activity.png" alt="activity"></center><br></p>
+<h2 id="Activity的常见生命周期"><a href="#Activity的常见生命周期" class="headerlink" title="Activity的常见生命周期"></a>Activity的常见生命周期</h2><p>　　实践是检验真理性的唯一标准，话不多说，直接上代码，一起来看看下边的Activity在从启动到销毁的过程中，都经历了哪些过程。<br>　　　<center><img src="https://raw.githubusercontent.com/sqHayden/sqHayden.github.io/master/avatar/activity/codeActivityLife.png" alt="activity"></center><br><br>　　代码运行结果如下：　　　<br>　　　<center><img src="https://raw.githubusercontent.com/sqHayden/sqHayden.github.io/master/avatar/activity/codeActivityResult.png" alt="activity"></center><br><br>　　从上边的运行结果可以看出，一个Activity正常的从创建到销毁，其生命周期的走向是：<br><br>　　　　　　onCreate() –&gt;onStart() –&gt;onResume() –&gt;onPause() –&gt;onStop() –&gt;onDestory()<br><br>　　下面，便让我们一起来看看这几大生命周期各自所代表的作用：<br><br>　　　　<font color="red" size="3">1. void onCreate(Bundle savedInstanceState)</font><br><br>　　　　当我们首次加载一个新创建的Activity时，此方法将会被首先执行。另外，如果当前的Activity被销毁（执行了 onDestroy() 方法），再重新加载进Task时，onCreate() 事件也会被重新执行。 onCreate() 方法中的参数<code>Bundle</code>对象，其作用是为了实现两个Activity之间的信息传输，将要传输的信息储存于Bundle，并通过Intent进行传递便可以实现Activity之间的通讯。<br><br>　　　　<font color="red" size="3">2. void onStart( )</font><br><br>　　　　此方法在 onCreate() 之后执行，当Activity变为在屏幕上对用户可见时调用。或者当前窗体被交换到后台一段时间并且此Activity并未被销毁时，如果用户再次查看此Activity，将会跳过 onCreate() ，直接再次去执行 onStart() 方法。<br><br>　　　　<font color="red" size="3">3. void onResume( )</font><br><br>　　　　此方法在用户获取到焦点，或者Activity开始与用户进行交互时调用，无论是新创建还是当一个已存在的Activity重新成为前台进程时，该方法都会被执行。此方法适用于在Activity被重新唤醒时，做一些数据的恢复处理以及资源的重新加载。<br><br>　　　　<font color="red" size="3">4. void onPause( )</font><br><br>　　　　当一个前台的Activity进程被部分遮挡或者完全不可见时，该方法会被调用【完全不可见时也会接着执行 onStop() 方法】。举个简单例子，当我们的前台Activity被半透明的Dialog所遮挡，或者被新启动的Activity完全遮盖的时候，就会导致 onPause() 方法的执行。也就是说，只要Activity仍然部分可见，但是当下Activity并不可操作，它就处在 onPause() 中了。此方法适用于去保存用户当前所用资源的现有进度，或者结束一些当前正在进行的任务。这样，一来不会占用系统资源，二来可通过 onResume() 方法，恢复自己在此刻所保存的一些进度数据。<br><br>　　　　<font color="red" size="3">5. void onStop( )</font><br><br>　　　　当一个Activity被置入后台或者被其它Activity完全遮盖而变为不可见状态的时候，此方法将会被调用。另外，若此活动被意外终止或者手动销毁时，也会执行此方法。当此方法被执行时，意味着我们应当将自己活动中的各项任务终止，并且应该释放那些不再需要的所有资源，<br>从而避免内存的泄露。<br><br>　　　　<font color="red" size="3">6. void onDestory( )</font><br><br>　　　　当Activity被彻底销毁时，将会执行此方法。在此方法中，我们应该去对各类线程、对象，进行彻底的回收操作，从而使这个活动被完全的销毁回收。<br><br>　　以上便是Activity中常用的七大周期，除此之外，还有三个周期方法也需要我们去多多掌握，从而在开发的过程中，变得游刃有余。</p>
+<h2 id="Activity的周期拓展"><a href="#Activity的周期拓展" class="headerlink" title="Activity的周期拓展"></a>Activity的周期拓展</h2><p>　　接下来要介绍的三个方法，在Activity中虽然不是非常常见，但有时在日常的某些功能开发中，却有着很重要的作用。下面，就一起来看看这三个方法具体的功能吧。<br>　　　<center><img src="https://raw.githubusercontent.com/sqHayden/sqHayden.github.io/master/avatar/activity/codeActivityExtra.png" alt="activity"></center><br><br>　　<font color="red" size="3">1. void onRestart( )</font><br><br>　　当我们将不可见的Activity从 onStop() 状态唤醒时，会去调用 onRestart() 方法，该方法优先于再次获得运行的 onStart() 方法，运行完 onRestart() 之后运行会再次执行 onStart() 。即当我们将Activity先从前台置入后台或将其覆盖后，通过摁返回键或者菜单栏将其唤醒到前台时，该Activity将会去执行此方法。<br><br>　　<font color="red" size="3">2. void onSaveInstanceState(Bundle outState)</font><br><br>　　此方法的调用时机并没有一个很明确的执行规则，可以这么说，当系统在不能确定当前Activity是否会被销毁的时候，就会回调此方法，保存我们的相关数据，从而使Activity在被不正常销毁的时候，能够留下销毁前保存的数据供以后再次调用。<br><br>　　当Activity生命周期结束且需要保存状态时，便会使用此方法其中的参数<code>outState</code>，将数据通过键值对的形式保存在这个对象Bundle中。而当我们需要恢复这些数据时， 可以回过头来看看 <code>onCreate(Bundle savedInstanceState)</code> 方法，一看它的参数名字，想必也明白了吧，可以通过此参数去获得我们当时保存的数据。<br><br>　　  下面列出几种 onSaveInstanceState() 调用的时机:  　 </p>
 <pre><code>1. 按下Home键: Activity进入了后台，此时会调用该方法;  
 2. 按下电源键: 屏幕关闭，Activity进入后台;  
 3. 启动其它Activity: Activity被压入了任务栈的栈底;  
 4. 横竖屏切换: 会销毁当前Activity并重新创建;  
-</code></pre><p>　　当用户点击回退键或者调用了finish()方法时，因为系统此时知道我们的意图是想关闭当前的Activity，因此便不会去执行此方法。也就是说，用户若是主动销毁，便不会被执行。而从调用时机来看，该方法一定是在onStop()方法之前调用，但是不确定是在onPause()方法之前还是之后调用。<br><br>　　<font color="red" size="3">3.void onActivityResult(int requestCode, int resultCode, Intent data)</font><br><br>　　如果想在Activity中得到新打开Activity关闭后返回的数据，就要使用 startActivityForResult(Intent intent,int requestCode) 方法打开新的Activity，新的Activity关闭后会向前面的Activity传回数据，此时，我们通过这个方法的调用，就可以拿到其中的参数Intent来获取到所返回的数据。而其中的前两个参数，是为了确认返回的数据是从哪个Activity返回的。<br><br>　　好了，说了这么多，下面便来通过上图的小案例，进行一个从原Activity启动新的Activity并通过使用返回键返回的实验。<br><br>　　先上结果:<br>　　　<center><img src="https://raw.githubusercontent.com/sqHayden/sqHayden.github.io/master/avatar/codeActivityFromTo.png" alt="activity"></center><br><br>　　从上述结果，可以清晰的看到各个周期的执行顺序，下面我们便由此，来看看Activity在这个案例操作中，都经历了哪几种状态。<br></p>
+</code></pre><p>　　当用户点击回退键或者调用了finish()方法时，因为系统此时知道我们的意图是想关闭当前的Activity，因此便不会去执行此方法。也就是说，用户若是主动销毁，便不会被执行。而从调用时机来看，该方法一定是在onStop()方法之前调用，但是不确定是在onPause()方法之前还是之后调用。<br><br>　　<font color="red" size="3">3.void onActivityResult(int requestCode, int resultCode, Intent data)</font><br><br>　　如果想在Activity中得到新打开Activity关闭后返回的数据，就要使用 startActivityForResult(Intent intent,int requestCode) 方法打开新的Activity，新的Activity关闭后会向前面的Activity传回数据，此时，我们通过这个方法的调用，就可以拿到其中的参数Intent来获取到所返回的数据。而其中的前两个参数，是为了确认返回的数据是从哪个Activity返回的。<br><br>　　好了，说了这么多，下面便来通过上图的小案例，进行一个从原Activity启动新的Activity并通过使用返回键返回的实验。<br><br>　　先上结果:<br>　　　<center><img src="https://raw.githubusercontent.com/sqHayden/sqHayden.github.io/master/avatar/activity/codeActivityFromTo.png" alt="activity"></center><br><br>　　从上述结果，可以清晰的看到各个周期的执行顺序，下面我们便由此，来看看Activity在这个案例操作中，都经历了哪几种状态。<br></p>
 <h2 id="Activity的四大状态"><a href="#Activity的四大状态" class="headerlink" title="Activity的四大状态"></a>Activity的四大状态</h2><h3 id="1-活动状态"><a href="#1-活动状态" class="headerlink" title="1.活动状态"></a>1.活动状态</h3><pre><code>onCreate() -&gt;onStart() -&gt; onResume()
 </code></pre><p>　　活动状态一般是指该Activity正处于获取用户焦点，与用户进行交互的状态中。即该Activity是在Android活动栈的最顶端，是一个前台进程。 一般地当Activity创建后就是处于该状态中。</p>
 <h3 id="2-暂停状态"><a href="#2-暂停状态" class="headerlink" title="2.暂停状态"></a>2.暂停状态</h3><pre><code>onResume() -&gt;onPause()  ||  onPause() -&gt;onResume()
@@ -376,12 +376,27 @@ height:50vh;
 </code></pre><p>　　停止状态一般是指该Activity被另一个Activity所完全覆盖，或者处于不可见的后台过程的状态，此时的它由于以及处于用户不可见状态，所以系统经常会由于内存不足而将该Activity强行进行销毁。 </p>
 <h3 id="4-死亡状态"><a href="#4-死亡状态" class="headerlink" title="4.死亡状态"></a>4.死亡状态</h3><pre><code>onStop -&gt;onDestory()
 </code></pre><p>　　当系统执行到Activity的 OnDestory() 方法时，此时的Activity便处于了死亡的状态。而且，当一个Activity处于停止状态时就很有可能会进入死亡状态，因为系统可能因内存不足而强行销毁该Activity。 </p>
-<h2 id="Activity的横竖屏切换"><a href="#Activity的横竖屏切换" class="headerlink" title="Activity的横竖屏切换"></a>Activity的横竖屏切换</h2><p>　　回到最初，当我们在启动一个Activity之后，如果旋转屏幕，将会发生什么事情呢？首先看一下旋转前后Activity的生命周期发生了怎么样的变化。<br>　　<center><img src="https://raw.githubusercontent.com/sqHayden/sqHayden.github.io/master/avatar/CodeActivityReCreate.png" alt="activity"></center><br><br>　　从上述结果，我们发现在旋转屏幕之后，Activity经历了先销毁，再重新创建的过程。那么在这个过程中，如果我们想要保留一些数据进去，使其在销毁后还能够被调用，应该怎么做。这时候就涉及到我们上边提到的方法了：<br></p>
+<h2 id="Activity的横竖屏切换"><a href="#Activity的横竖屏切换" class="headerlink" title="Activity的横竖屏切换"></a>Activity的横竖屏切换</h2><p>　　回到最初，当我们在启动一个Activity之后，如果旋转屏幕，将会发生什么事情呢？首先看一下旋转前后Activity的生命周期发生了怎么样的变化。<br>　　<center><img src="https://raw.githubusercontent.com/sqHayden/sqHayden.github.io/master/avatar/activity/CodeActivityReCreate.png" alt="activity"></center><br><br>　　从上述结果，我们发现在旋转屏幕之后，Activity经历了先销毁，再重新创建的过程。那么在这个过程中，如果我们想要保留一些数据进去，使其在销毁后还能够被调用，应该怎么做。这时候就涉及到我们上边提到的方法了：<br></p>
 <ul>
 <li>onSaveInstanceState(Bundle outstate) <br><br>横竖屏切换时，当Activity被销毁时系统会调用 onSaveInstanceState() 方法，通过Bundle参数来保存当前的Activity中的重要数据。这个方法会在 onStop() 前调用。</li>
 <li>onCreate(Bundle savedInstanceState)<br><br>当Activity被重新创建之后会调用 onCreate() 方法，并把Activity销毁时重写的 onSaveInstanceState() 方法中所保留的数据通过传递给 onCreate() 方法。所以我们可以在 onCreate() 方法中实现数据的获取调用。</li>
 </ul>
-<p>　　那么，可能在日常的开发中，很多时候我们并不希望在屏幕进行旋转之后，便将Activity进行一次销毁重建。那么，在android中，便为我们提供了相应的解决办法。我们可以通过在AndroidManifest.xml文件中通过配置Activity的相关标签属性，来使其在旋转的过程中，不去进行二次的创建。<br><br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">&lt;activity android:name=<span class="string">".MainActivity"</span></span><br><span class="line">        <span class="comment">//利用这个属性使屏幕始终保持在横屏</span></span><br><span class="line">        android:screenOrientation=”landscape”</span><br><span class="line">        <span class="comment">//利用这个属性使屏幕始终保持在竖屏</span></span><br><span class="line">        android:screenOrientation=”portrait”</span><br><span class="line">        <span class="comment">//利用这个属性来禁止屏幕旋转后重绘Activity</span></span><br><span class="line">        android:configChanges=<span class="string">"orientation|keyboardHidden|screenSize"</span></span><br><span class="line">         &gt;</span><br><span class="line">         &lt;intent-filter&gt;</span><br><span class="line">             &lt;action android:name=<span class="string">"android.intent.action.MAIN"</span> /&gt;</span><br><span class="line">             &lt;category android:name=<span class="string">"android.intent.category.LAUNCHER"</span> /&gt;</span><br><span class="line">         &lt;/intent-filter&gt;</span><br><span class="line">     &lt;/activity&gt;</span><br><span class="line">     &lt;activity android:name=<span class="string">".Main1Activity"</span>/&gt;</span><br></pre></td></tr></table></figure></p>
+<p>　　那么，可能在日常的开发中，很多时候我们并不希望在屏幕进行旋转之后，便将Activity进行一次销毁重建。那么，在android中，便为我们提供了相应的解决办法。我们可以通过在AndroidManifest.xml文件中通过配置Activity的相关标签属性，来使其在旋转的过程中，不去进行二次的创建。<br></p>
+<pre><code class="Java">&lt;activity android:name=<span class="string">".MainActivity"</span>
+        <span class="comment">//利用这个属性使屏幕始终保持在横屏</span>
+        android:screenOrientation=”landscape”
+        <span class="comment">//利用这个属性使屏幕始终保持在竖屏</span>
+        android:screenOrientation=”portrait”
+        <span class="comment">//利用这个属性来禁止屏幕旋转后重绘Activity</span>
+        android:configChanges=<span class="string">"orientation|keyboardHidden|screenSize"</span>
+         &gt;
+         &lt;intent-filter&gt;
+             &lt;action android:name=<span class="string">"android.intent.action.MAIN"</span> /&gt;
+             &lt;category android:name=<span class="string">"android.intent.category.LAUNCHER"</span> /&gt;
+         &lt;/intent-filter&gt;
+     &lt;/activity&gt;
+     &lt;activity android:name=<span class="string">".Main1Activity"</span>/&gt;
+</code></pre>
 <p>　　好了，本次博客就先写到这里，后期我会总结有关<code>3D绘制</code>和<code>高德地图</code>相关的内容，尽请期待。</p>
 
     </article>
@@ -398,8 +413,8 @@ height:50vh;
         <li class="next">
             
                 <div class="nextSlogan">后一篇</div>
-                <a href= "/2018/05/08/opengl es/" title= OpenGL ES实现3D星空背景旋转立方体 >
-                    <div class="nextTitle">OpenGL ES实现3D星空背景旋转立方体</div>
+                <a href= "/2018/05/16/listview/" title= ListView控件复用详解 >
+                    <div class="nextTitle">ListView控件复用详解</div>
                 </a>
             
         </li>
@@ -585,30 +600,84 @@ top:50vh;
     
     
     
-    <div class="total-archive"> Total : 5 </div>
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-archive"> Total : 6 </div>
     
     <div class="post-archive">
     
     
     
     
+    <div class="archive-year"> Invalid date </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">Invalid date</span><a class="archive-post-title" href= "/2018/05/16/opengl es/" >OpenGL ES实现3D星空背景旋转立方体</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
     <div class="archive-year"> 2018 </div>
     <ul class="year-list">
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">05/08</span><a class="archive-post-title" href= "/2018/05/08/opengl es/" >OpenGL ES实现3D星空背景旋转立方体</a>
-        </li>
-    
-    
-        <li class="archive-post-item">
-            <span class="archive-post-date">03/28</span><a class="archive-post-title" href= "/2018/03/28/activity/" >Activity生命周期详解</a>
-        </li>
-    
-    
-        <li class="archive-post-item">
             <span class="archive-post-date">03/12</span><a class="archive-post-title" href= "/2018/03/12/my-first-blog/" >博客启程之路</a>
         </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> Invalid date </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">Invalid date</span><a class="archive-post-title" href= "/2018/05/16/listview/" >ListView控件复用详解</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> Invalid date </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">Invalid date</span><a class="archive-post-title" href= "/2018/05/16/activity/" >Activity生命周期详解</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2018 </div>
+    <ul class="year-list">
     
     
         <li class="archive-post-item">

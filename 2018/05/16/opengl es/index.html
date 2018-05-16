@@ -315,7 +315,7 @@ height:50vh;
             
             <div class="post-intro-meta">
                 <span class="post-intro-calander iconfont-archer">&#xe676;</span>
-                <span class="post-intro-time">2018/05/08</span>
+                <span class="post-intro-time">2018/05/16</span>
                 
                 <span id="busuanzi_container_page_pv" class="busuanzi-pv">
                     <span class="iconfont-archer">&#xe602;</span>
@@ -351,7 +351,7 @@ height:50vh;
 </blockquote>
 <hr>
 <p>本次的目标，是实现如下所示的3D绘制效果，怎么样去做呢？</p>
-<center><img src="https://raw.githubusercontent.com/sqHayden/sqHayden.github.io/master/avatar/3D.gif" alt="activity"></center>
+<center><img src="https://raw.githubusercontent.com/sqHayden/sqHayden.github.io/master/avatar/3D/3D.gif" alt="activity"></center>
 
 <hr>
 <h2 id="OpenGL-ES-简介"><a href="#OpenGL-ES-简介" class="headerlink" title="OpenGL ES 简介"></a>OpenGL ES 简介</h2><p>OpenGL ES (OpenGL for Embedded Systems) 是 OpenGL 三维图形 API 的子集，为针对手机、PDA和游戏主机等嵌入式设备而设计。Android包括支持高性能2d和3d图形以及开放图形库(OpenGL),具体来说，即OpenGL是一个跨平台图形API,用于指定一个标准为3 d图形处理硬件的软件接口。</p>
@@ -377,10 +377,10 @@ height:50vh;
 <p>在本次的点坐标数组排序中，0x10000是出于OPENGL前期内存节约的考虑，以INT型模拟FLOAT型来表示，0x 0001 0000 前面4位表示小数点前，后4位表示小数点后，所以0x10000表示浮点数的1.0f。</p>
 <blockquote>
 <ul>
-<li>GL_TRIANGLE_STRIP模式介绍<br>在OPenGL ES 中，面的绘制并不是由一个四点平面进行绘制的，而是由多个三角形依照不同规则进行拼接，用以形成一个平面。此处我们采用<code>GL_TRIANGLE_STRIP</code>模式，来完成正方的六个面绘制。<br> <img src="https://raw.githubusercontent.com/sqHayden/sqHayden.github.io/master/avatar/3DPoint.png" alt="activity"><br>如上图所示，假设此正方形是物体的上表面，且已知对应四个坐标点，那么为了避免重复绘制或者乱序绘制，我们需要对这四个三维坐标进行排序定义，之后调用<code>GL_TRIANGLE_STRIP</code>模式自动处理，就可以绘制出上表面。<br><code>GL_TRIANGLE_STRIP</code>模式即<code>连续三角绘制</code>，意味着它总是以连续的三个点绘制出一个三角形。<br>此处若定义为{v0,v1,v2,v3},则会按照{0,1,2}和{1,2,3}绘制出两个三角形，且正好拼凑出上表面。假设我们定义为{v0,v1,v3,v2},则按照{0,1,3}和{1,3,2}绘制出了一个互相覆盖的多边形导致绘制失败。<br>因此，我们在定义六个面的顶点坐标时，需要遵循一个规则：若以任一点作为起始绘制点，则其对角点必须作为最后一个定义点。</li>
+<li>GL_TRIANGLE_STRIP模式介绍<br>在OPenGL ES 中，面的绘制并不是由一个四点平面进行绘制的，而是由多个三角形依照不同规则进行拼接，用以形成一个平面。此处我们采用<code>GL_TRIANGLE_STRIP</code>模式，来完成正方的六个面绘制。<br><img src="https://raw.githubusercontent.com/sqHayden/sqHayden.github.io/master/avatar/3D/3DPoint.png" alt="activity"><br>如上图所示，假设此正方形是物体的上表面，且已知对应四个坐标点，那么为了避免重复绘制或者乱序绘制，我们需要对这四个三维坐标进行排序定义，之后调用<code>GL_TRIANGLE_STRIP</code>模式自动处理，就可以绘制出上表面。<br><code>GL_TRIANGLE_STRIP</code>模式即<code>连续三角绘制</code>，意味着它总是以连续的三个点绘制出一个三角形。<br>此处若定义为{v0,v1,v2,v3},则会按照{0,1,2}和{1,2,3}绘制出两个三角形，且正好拼凑出上表面。假设我们定义为{v0,v1,v3,v2},则按照{0,1,3}和{1,3,2}绘制出了一个互相覆盖的多边形导致绘制失败。<br>因此，我们在定义六个面的顶点坐标时，需要遵循一个规则：若以任一点作为起始绘制点，则其对角点必须作为最后一个定义点。</li>
 </ul>
 </blockquote>
-<p>好了，定义好了坐标，我们就可以观察到一个正方体出现在了我们的视野中。不过此时由于遮挡效果，我们只能看到一个2D的平面图形，为了好看一些，先给它加入颜色索引，并对其进行三维的自旋操作，此时就可以较为清晰地观察到它的状态了：<br>    <center><img src="https://raw.githubusercontent.com/sqHayden/sqHayden.github.io/master/avatar/color3D.gif" alt="activity"></center></p>
+<p>好了，定义好了坐标，我们就可以观察到一个正方体出现在了我们的视野中。不过此时由于遮挡效果，我们只能看到一个2D的平面图形，为了好看一些，先给它加入颜色索引，并对其进行三维的自旋操作，此时就可以较为清晰地观察到它的状态了：<br>    <center><img src="https://raw.githubusercontent.com/sqHayden/sqHayden.github.io/master/avatar/3D/color3D.gif" alt="activity"></center></p>
 <p>既然已经看到了效果，接下来我们就直接上代码，来完成后续的纹理添加以及背景绘制，因为代码中注释很多，在此就不多做说明了。  </p>
 <p><em>模块1–MySurfaceView的构造</em><br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">MySurfaceView</span><span class="params">(Context context)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">super</span>(context);</span><br><span class="line">    <span class="comment">//传入定义的渲染器对象</span></span><br><span class="line">    mRenderer = <span class="keyword">new</span> SceneRenderer();</span><br><span class="line">    setRenderer(mRenderer);</span><br><span class="line">    <span class="comment">//设置渲染模式为连续渲染</span></span><br><span class="line">    setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);</span><br><span class="line">    <span class="comment">//初始化</span></span><br><span class="line">    textureids = <span class="keyword">new</span> <span class="keyword">int</span>[<span class="number">1</span>];</span><br><span class="line">    <span class="comment">//实例化bitmap</span></span><br><span class="line">    bitmap = BitGL.bitmap;</span><br><span class="line">    <span class="comment">/*创建顶点坐标数据缓存，由于不同平台字节顺序不同，数据单元不是字节的,因此一定要经过ByteBuffer转换，关键是通过ByteOrder设置nativeOrder()*/</span></span><br><span class="line">    <span class="comment">//---------------------------------------------------</span></span><br><span class="line">    <span class="comment">//缓存顶点数组</span></span><br><span class="line">    <span class="comment">//分配的内存块</span></span><br><span class="line">    ByteBuffer vbb = ByteBuffer.allocateDirect(vertices.length * <span class="number">4</span>);</span><br><span class="line">    <span class="comment">//设置本地平台的字节顺序</span></span><br><span class="line">    vbb.order(ByteOrder.nativeOrder());</span><br><span class="line">    <span class="comment">//转换为int型缓冲</span></span><br><span class="line">    vertexBuffer = vbb.asIntBuffer();</span><br><span class="line">    <span class="comment">//向缓冲区中放入顶点坐标数据</span></span><br><span class="line">    vertexBuffer.put(vertices);</span><br><span class="line">    <span class="comment">//设置缓冲区的起始位置</span></span><br><span class="line">    vertexBuffer.position(<span class="number">0</span>);</span><br><span class="line">    <span class="comment">//----------------------------------------------------</span></span><br><span class="line">    <span class="comment">//缓存纹理数组</span></span><br><span class="line">    ByteBuffer tbb = ByteBuffer.allocateDirect(texCoords.length * <span class="number">4</span> * <span class="number">6</span>);</span><br><span class="line">    tbb.order(ByteOrder.nativeOrder());</span><br><span class="line">    texBuffer = tbb.asIntBuffer();</span><br><span class="line">    <span class="comment">//为每一个面贴上纹理</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">6</span>; i++) &#123;</span><br><span class="line">        texBuffer.put(texCoords);</span><br><span class="line">    &#125;</span><br><span class="line">    texBuffer.position(<span class="number">0</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
 <p><em>模块2–自定义的渲染器SceneRenderer的实现</em><br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="class"><span class="keyword">class</span> <span class="title">SceneRenderer</span> <span class="keyword">implements</span> <span class="title">Renderer</span> </span>&#123;</span><br><span class="line">     <span class="comment">//小星星对象</span></span><br><span class="line">     Celestial celestialSmall;</span><br><span class="line">     <span class="comment">//大星星对象</span></span><br><span class="line">     Celestial celestialBig;</span><br><span class="line">     <span class="comment">//连续绘制函数</span></span><br><span class="line">     <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onDrawFrame</span><span class="params">(GL10 gl)</span> </span>&#123;</span><br><span class="line">         <span class="comment">//清除屏幕缓存和深度缓存</span></span><br><span class="line">         gl.glClear(GL10.GL_COLOR_BUFFER_BIT | GL10.GL_DEPTH_BUFFER_BIT);</span><br><span class="line">         <span class="comment">//启用顶点坐标数据</span></span><br><span class="line">         gl.glEnableClientState(GL10.GL_VERTEX_ARRAY);</span><br><span class="line">         <span class="comment">//启用纹理贴图坐标数据</span></span><br><span class="line">         gl.glEnableClientState(GL10.GL_TEXTURE_COORD_ARRAY);</span><br><span class="line">         <span class="comment">//设置当前矩阵堆栈为模型堆栈</span></span><br><span class="line">         gl.glMatrixMode(GL10.GL_MODELVIEW);</span><br><span class="line">         <span class="comment">//关闭光照效果</span></span><br><span class="line">         gl.glDisable(GL10.GL_LIGHTING);</span><br><span class="line">         <span class="comment">//重置当前的模型视图矩阵</span></span><br><span class="line">         gl.glLoadIdentity();</span><br><span class="line">         <span class="comment">//光照属性(镜面光，前后受光3.5f)</span></span><br><span class="line">         gl.glMaterialf(GL10.GL_FRONT_AND_BACK, GL10.GL_SHININESS, <span class="number">3.5f</span>);</span><br><span class="line">         <span class="comment">//设置顶点的位置数据</span></span><br><span class="line">         gl.glVertexPointer(<span class="number">3</span>, GL10.GL_FIXED, <span class="number">0</span>, vertexBuffer);</span><br><span class="line">         <span class="comment">//设置纹理点坐标数据</span></span><br><span class="line">         gl.glTexCoordPointer(<span class="number">2</span>, GL10.GL_FIXED, <span class="number">0</span>, texBuffer);</span><br><span class="line">         <span class="comment">//向z轴里移入6.0f</span></span><br><span class="line">         gl.glTranslatef(<span class="number">0.0f</span>, <span class="number">0.0f</span>, -<span class="number">6.0f</span>);</span><br><span class="line">         <span class="comment">//入栈保存</span></span><br><span class="line">         gl.glPushMatrix();</span><br><span class="line">         <span class="comment">// 设置3个方向的旋转</span></span><br><span class="line">         gl.glRotatef(xrot, one, <span class="number">0.0f</span>, <span class="number">0.0f</span>);</span><br><span class="line">         gl.glRotatef(yrot, <span class="number">0.0f</span>, one, <span class="number">0.0f</span>);</span><br><span class="line">         gl.glRotatef(zrot, <span class="number">0.0f</span>, <span class="number">0.0f</span>, one);</span><br><span class="line">         <span class="comment">//缩放</span></span><br><span class="line">         gl.glScalef(<span class="number">0.75f</span>,<span class="number">0.75f</span>, <span class="number">0.75f</span>);</span><br><span class="line">         <span class="comment">// 绘制正方体</span></span><br><span class="line">         <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">6</span>; i++) &#123;</span><br><span class="line">             gl.glDrawArrays(GL10.GL_TRIANGLE_STRIP, i * <span class="number">4</span>, <span class="number">4</span>);</span><br><span class="line">         &#125;</span><br><span class="line">         <span class="comment">//关闭顶点坐标功能</span></span><br><span class="line">         gl.glDisableClientState(GL10.GL_TEXTURE_COORD_ARRAY);</span><br><span class="line">         <span class="comment">//关闭纹理坐标功能</span></span><br><span class="line">         gl.glDisableClientState(GL10.GL_VERTEX_ARRAY);</span><br><span class="line">         <span class="comment">// 设置旋转角度</span></span><br><span class="line">         xrot += <span class="number">0.5f</span>;</span><br><span class="line">         yrot += <span class="number">0.6f</span>;</span><br><span class="line">         zrot += <span class="number">0.3f</span>;</span><br><span class="line">         <span class="comment">//出栈恢复</span></span><br><span class="line">         gl.glPopMatrix();</span><br><span class="line">         <span class="comment">//入栈保存</span></span><br><span class="line">         gl.glPushMatrix();</span><br><span class="line">         gl.glTranslatef(<span class="number">0</span>, -<span class="number">24.0f</span>, <span class="number">0.0f</span>);</span><br><span class="line">         celestialSmall.drawSelf(gl);</span><br><span class="line">         celestialBig.drawSelf(gl);</span><br><span class="line">         <span class="comment">//出栈恢复</span></span><br><span class="line">         gl.glPopMatrix();</span><br><span class="line">     &#125;</span><br><span class="line">     <span class="comment">//视图改变函数</span></span><br><span class="line">     <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onSurfaceChanged</span><span class="params">(GL10 gl, <span class="keyword">int</span> width, <span class="keyword">int</span> height)</span> </span>&#123;</span><br><span class="line">         <span class="comment">//设置3D视窗的大小及位置</span></span><br><span class="line">         gl.glViewport(<span class="number">0</span>, <span class="number">0</span>, width, height);</span><br><span class="line">         <span class="comment">//将当前矩阵模式设为投影矩阵</span></span><br><span class="line">         gl.glMatrixMode(GL10.GL_PROJECTION);</span><br><span class="line">         <span class="comment">//初始化单位矩阵</span></span><br><span class="line">         gl.glLoadIdentity();</span><br><span class="line">         <span class="comment">//计算透视视窗的宽度、高度比</span></span><br><span class="line">         <span class="keyword">float</span> ratio = (<span class="keyword">float</span>) width / height;</span><br><span class="line">         <span class="comment">//调用此方法设置透视视窗的空间大小</span></span><br><span class="line">         gl.glFrustumf(-ratio * <span class="number">0.5f</span>, ratio * <span class="number">0.5f</span>, -<span class="number">0.5f</span>, <span class="number">0.5f</span>, <span class="number">1</span>, <span class="number">100</span>);</span><br><span class="line">     &#125;</span><br><span class="line">     <span class="comment">//视图创建函数</span></span><br><span class="line">     <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onSurfaceCreated</span><span class="params">(GL10 gl, EGLConfig config)</span> </span>&#123;</span><br><span class="line">         <span class="comment">//关闭抗抖动</span></span><br><span class="line">         gl.glDisable(GL10.GL_DITHER);</span><br><span class="line">         <span class="comment">//设置特定Hint项目的模式，这里设置为使用快速模式</span></span><br><span class="line">         gl.glHint(GL10.GL_PERSPECTIVE_CORRECTION_HINT, GL10.GL_FASTEST);</span><br><span class="line">         <span class="comment">//设置屏幕背景色黑色rgb+a</span></span><br><span class="line">         gl.glClearColor(<span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>);</span><br><span class="line">         <span class="comment">//设置着色模型为平滑着色</span></span><br><span class="line">         gl.glShadeModel(GL10.GL_SMOOTH);</span><br><span class="line">         <span class="comment">//启用深度测试</span></span><br><span class="line">         gl.glEnable(GL10.GL_DEPTH_TEST);</span><br><span class="line">         <span class="comment">//设置为打开背面剪裁</span></span><br><span class="line">         gl.glEnable(GL10.GL_CULL_FACE);</span><br><span class="line">         <span class="comment">//创建星空</span></span><br><span class="line">         celestialSmall = <span class="keyword">new</span> Celestial(<span class="number">0</span>, <span class="number">0</span>, <span class="number">3</span>, <span class="number">0</span>, <span class="number">1250</span>);</span><br><span class="line">         celestialBig = <span class="keyword">new</span> Celestial(<span class="number">0</span>, <span class="number">0</span>, <span class="number">5</span>, <span class="number">0</span>,<span class="number">800</span>);</span><br><span class="line">         <span class="comment">//启用纹理功能</span></span><br><span class="line">         gl.glEnable(GL10.GL_TEXTURE_2D);</span><br><span class="line">         <span class="comment">// 创建纹理</span></span><br><span class="line">         gl.glGenTextures(<span class="number">1</span>, textureids, <span class="number">0</span>);</span><br><span class="line">         <span class="comment">// 绑定要使用的纹理</span></span><br><span class="line">         gl.glBindTexture(GL10.GL_TEXTURE_2D, textureids[<span class="number">0</span>]);</span><br><span class="line">         <span class="comment">// 生成纹理</span></span><br><span class="line">         GLUtils.texImage2D(GL10.GL_TEXTURE_2D, <span class="number">0</span>, bitmap, <span class="number">0</span>);</span><br><span class="line">         <span class="comment">// 线性滤波</span></span><br><span class="line">         gl.glTexParameterx(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_MIN_FILTER,</span><br><span class="line">                 GL10.GL_LINEAR);</span><br><span class="line">         gl.glTexParameterx(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_MAG_FILTER,</span><br><span class="line">                 GL10.GL_LINEAR);</span><br><span class="line">         <span class="comment">//开启线程使星空背景移动</span></span><br><span class="line">         <span class="keyword">new</span> Thread() &#123;</span><br><span class="line">             <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">                 <span class="keyword">while</span> (<span class="keyword">true</span>) &#123;</span><br><span class="line">                     celestialSmall.yAngle += <span class="number">0.5</span>;</span><br><span class="line">                     <span class="keyword">if</span> (celestialSmall.yAngle &gt;= <span class="number">360</span>) &#123;</span><br><span class="line">                         celestialSmall.yAngle = <span class="number">0</span>;</span><br><span class="line">                     &#125;</span><br><span class="line">                     celestialBig.yAngle += <span class="number">0.5</span>;</span><br><span class="line">                     <span class="keyword">if</span> (celestialBig.yAngle &gt;= <span class="number">360</span>) &#123;</span><br><span class="line">                         celestialBig.yAngle = <span class="number">0</span>;</span><br><span class="line">                     &#125;</span><br><span class="line">                     <span class="keyword">try</span> &#123;</span><br><span class="line">                         Thread.sleep(<span class="number">100</span>);</span><br><span class="line">                     &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                         e.printStackTrace();</span><br><span class="line">                     &#125;</span><br><span class="line">                 &#125;</span><br><span class="line">             &#125;</span><br><span class="line">         &#125;.start();</span><br><span class="line">     &#125;</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure></p>
@@ -393,8 +393,8 @@ height:50vh;
         <li class="previous">
             
                 <div class="prevSlogan">前一篇</div>
-                <a href= "/2018/03/28/activity/" title= Activity生命周期详解 >
-                    <div class="prevTitle">Activity生命周期详解</div>
+                <a href= "/2018/05/16/listview/" title= ListView控件复用详解 >
+                    <div class="prevTitle">ListView控件复用详解</div>
                 </a>
             
         </li>
@@ -583,30 +583,84 @@ top:50vh;
     
     
     
-    <div class="total-archive"> Total : 5 </div>
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-archive"> Total : 6 </div>
     
     <div class="post-archive">
     
     
     
     
+    <div class="archive-year"> Invalid date </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">Invalid date</span><a class="archive-post-title" href= "/2018/05/16/opengl es/" >OpenGL ES实现3D星空背景旋转立方体</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
     <div class="archive-year"> 2018 </div>
     <ul class="year-list">
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">05/08</span><a class="archive-post-title" href= "/2018/05/08/opengl es/" >OpenGL ES实现3D星空背景旋转立方体</a>
-        </li>
-    
-    
-        <li class="archive-post-item">
-            <span class="archive-post-date">03/28</span><a class="archive-post-title" href= "/2018/03/28/activity/" >Activity生命周期详解</a>
-        </li>
-    
-    
-        <li class="archive-post-item">
             <span class="archive-post-date">03/12</span><a class="archive-post-title" href= "/2018/03/12/my-first-blog/" >博客启程之路</a>
         </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> Invalid date </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">Invalid date</span><a class="archive-post-title" href= "/2018/05/16/listview/" >ListView控件复用详解</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> Invalid date </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">Invalid date</span><a class="archive-post-title" href= "/2018/05/16/activity/" >Activity生命周期详解</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2018 </div>
+    <ul class="year-list">
     
     
         <li class="archive-post-item">
