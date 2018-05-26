@@ -315,7 +315,7 @@ height:50vh;
             
             <div class="post-intro-meta">
                 <span class="post-intro-calander iconfont-archer">&#xe676;</span>
-                <span class="post-intro-time">2018/05/25</span>
+                <span class="post-intro-time">2018/05/26</span>
                 
                 <span id="busuanzi_container_page_pv" class="busuanzi-pv">
                     <span class="iconfont-archer">&#xe602;</span>
@@ -352,7 +352,7 @@ height:50vh;
 <hr>
 <h2 id="1-环境的搭建-Android-Studio"><a href="#1-环境的搭建-Android-Studio" class="headerlink" title="1.环境的搭建(Android Studio)"></a>1.环境的搭建(Android Studio)</h2><h3 id="1-key值获取"><a href="#1-key值获取" class="headerlink" title="1.key值获取"></a>1.key值获取</h3><p>　　在高德地图官网注册好账号之后（这方面不用多说了吧＞△＜），接下来我们依次进入<code>个人中心</code>&gt;<code>应用管理</code>&gt;<code>创建新应用</code>，此时如下所示：<br>　　 <center><img src="https://raw.githubusercontent.com/sqHayden/sqHayden.github.io/master/avatar/Map/map_gai.png" alt="map"></center><br>　　要成功的申请到所需要的Key值，我们需要去仔细的填写我所标记的这三点内容。那么，如何才能得到呢？  </p>
 <hr>
-<p>　　(1)(2)调试版及发布版本的安全码SHA1:<br>　　在我们的android studio中，打开我们的项目，将其进行打包，此时需要注意的地方：<code>要将其打包两次，一次选择Debug版本，一次选择Release版本，生成两个版本各自对应的.jks文件</code>,然后我们就可以查询本项目对应的各自版本的SHA1值了。<br>　　　　 <center><img src="https://raw.githubusercontent.com/sqHayden/sqHayden.github.io/master/avatar/Map/map_debug_jks.png" alt="map"></center><br>　　在这里建议将其打包在项目路径下，方便后边进行查找。下边是打包好之后所生成的两个.jks文件。<br>　　　　 <center><img src="https://raw.githubusercontent.com/sqHayden/sqHayden.github.io/master/avatar/Map/map_first_jks.png" alt="map"></center><br>　　接下来我们利用一条命令去查询一下本项目对应的发布版SHA1值以及调试版SHA1值，命令如下所示(要在对应的key.jks所在路径下执行查询的相关命令)：<br>　　<code>keytool -list -v -keystore debug.jks</code>(查询debug版)以及<code>keytool -list -v -keystore release.jks</code>(查询release版)<br>　　　　  <center><img src="https://raw.githubusercontent.com/sqHayden/sqHayden.github.io/master/avatar/Map/map_sha1.png" alt="map"></center><br>　　(3)包名<br>　　这里的包名不可以乱填，必须是<code>项目路径下所创建的，需要用到地图相关功能的包</code>的包名。<br>　　打开 Android 项目的 AndroidManifest.xml 配置文件，package 属性所对应的内容为应用包名，也请检查 build.gradle 文件的 applicationid 属性是否与上文提到的 package 属性一致，如果不一致会导致INVALID_USER_SCODE，请调整一致。</p>
+<p>　　(1)(2)调试版及发布版本的安全码SHA1:<br>　　在我们的android studio中，打开我们的项目，将其进行打包，此时需要注意的地方：<code>要将其打包两次，分别新建debug.jks,选择Debug版本进行打包，以及新建release.jks,同时选择Release版本进行打包，最终会生成两个.jks文件</code>,然后我们就可以查询本项目对应的各自版本的SHA1值了。<br>　　　　 <center><img src="https://raw.githubusercontent.com/sqHayden/sqHayden.github.io/master/avatar/Map/map_debug_jks.png" alt="map"></center><br>　　在这里建议将其打包在项目路径下，方便后边进行查找。下边是打包好之后所生成的两个.jks文件。<br>　　　　 <center><img src="https://raw.githubusercontent.com/sqHayden/sqHayden.github.io/master/avatar/Map/map_first_jks.png" alt="map"></center><br>　　接下来我们利用一条命令去查询一下本项目对应的发布版SHA1值以及调试版SHA1值，命令如下所示(要在对应的key.jks所在路径下执行查询的相关命令)：<br>　　<code>keytool -list -v -keystore debug.jks</code>(查询debug版)以及<code>keytool -list -v -keystore release.jks</code>(查询release版)<br>　　　　  <center><img src="https://raw.githubusercontent.com/sqHayden/sqHayden.github.io/master/avatar/Map/map_sha1.png" alt="map"></center><br>　　(3)包名<br>　　这里的包名不可以乱填，必须是<code>项目路径下所创建的，需要用到地图相关功能的包</code>的包名。<br>　　打开 Android 项目的 AndroidManifest.xml 配置文件，package 属性所对应的内容为应用包名，也请检查 build.gradle 文件的 applicationid 属性是否与上文提到的 package 属性一致，如果不一致会导致INVALID_USER_SCODE，请调整一致。</p>
 <hr>
 <p>　　到了这里，就可以成功的拿到项目对应的key值了。  </p>
 <h3 id="2-导包及添加-so文件"><a href="#2-导包及添加-so文件" class="headerlink" title="2.导包及添加.so文件"></a>2.导包及添加.so文件</h3><p>　　拿到key值后，我们就开始进入到资源的准备工作。首先是导入地图相关的包，放入libs目录下。<br>　　 <center><img src="https://raw.githubusercontent.com/sqHayden/sqHayden.github.io/master/avatar/Map/map_peizhi.png" alt="map"></center><br>　　接着就是添加.so文件，在 main 目录下创建文件夹 jniLibs (如果有就不需要创建了)，将下载文件的 armeabi 文件夹复制到这个目录下,如果已经有这个目录，将下载的 so 库复制到这个目录即可。如图所示：<br>　　 <center><img src="https://raw.githubusercontent.com/sqHayden/sqHayden.github.io/master/avatar/Map/map_so.png" alt="map"></center><br>　　<font color="red">此时有一个需要着重注意的地方，就是<code>我们得保证在jniLibs下的每种版本，其内部对应的.so文件数量和种类必须是一样的</code>，不然的话，会报错找不到资源。</font>  </p>
@@ -675,10 +675,6 @@ top:50vh;
     
     
     
-    
-    
-    
-    
     <div class="total-archive"> Total : 7 </div>
     
     <div class="post-archive">
@@ -691,7 +687,7 @@ top:50vh;
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">05/25</span><a class="archive-post-title" href= "/2018/05/25/map-gaode/" >高德地图开发(环境搭建及地图显示)</a>
+            <span class="archive-post-date">05/26</span><a class="archive-post-title" href= "/2018/05/26/map-gaode/" >高德地图开发(环境搭建及地图显示)</a>
         </li>
     
     
