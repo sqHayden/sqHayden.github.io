@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html>
+    <!-- title -->
+
+
+
+
+
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" >
+    <title>Material Design系列最佳实践（一） · sq的博客主页</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+        box-shadow: 0 0 3px 0 rgba(0, 0, 0, 0.7);
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s 1;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href= /css/style.css?v=20180311 as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="stylesheet" type="text/css" href= /css/mobile.css?v=20180311 media="(max-width: 980px)"/>
+    <link rel="icon" href= /assets/catgirl.ico>
+    <script>
+  // load webfont-loader async, and add callback function
+  function async(u, c) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+  
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntroTags = document.getElementsByClassName('post-intro-tags')[0],
+        postIntroMeat = document.getElementsByClassName('post-intro-meta')[0];
+      if (postIntroTags) {
+        postIntroTags.classList.add('post-fade-in');
+      }
+      if (postIntroMeat) {
+        postIntroMeat.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  async("https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", asyncCb)
+</script>
+    <script>
+        (function (w) {
+            "use strict";
+            // rel=preload support test
+            if (!w.loadCSS) {
+                w.loadCSS = function () { };
+            }
+            // define on the loadCSS obj
+            var rp = loadCSS.relpreload = {};
+            // rel=preload feature support test
+            // runs once and returns a function for compat purposes
+            rp.support = (function () {
+                var ret;
+                try {
+                    ret = w.document.createElement("link").relList.supports("preload");
+                } catch (e) {
+                    ret = false;
+                }
+                return function () {
+                    return ret;
+                };
+            })();
+
+            // if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+            // then change that media back to its intended value on load
+            rp.bindMediaToggle = function (link) {
+                // remember existing media attr for ultimate state, or default to 'all'
+                var finalMedia = link.media || "all";
+
+                function enableStylesheet() {
+                    link.media = finalMedia;
+                }
+
+                // bind load handlers to enable media
+                if (link.addEventListener) {
+                    link.addEventListener("load", enableStylesheet);
+                } else if (link.attachEvent) {
+                    link.attachEvent("onload", enableStylesheet);
+                }
+
+                // Set rel and non-applicable media type to start an async request
+                // note: timeout allows this to happen async to let rendering continue in IE
+                setTimeout(function () {
+                    link.rel = "stylesheet";
+                    link.media = "only x";
+                });
+                // also enable media after 3 seconds,
+                // which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+                setTimeout(enableStylesheet, 3000);
+            };
+
+            // loop through link elements in DOM
+            rp.poly = function () {
+                // double check this to prevent external calls from running
+                if (rp.support()) {
+                    return;
+                }
+                var links = w.document.getElementsByTagName("link");
+                for (var i = 0; i < links.length; i++) {
+                    var link = links[i];
+                    // qualify links to those with rel=preload and as=style attrs
+                    if (link.rel === "preload" && link.getAttribute("as") === "style" && !link.getAttribute("data-loadcss")) {
+                        // prevent rerunning on link
+                        link.setAttribute("data-loadcss", true);
+                        // bind listeners to toggle media back
+                        rp.bindMediaToggle(link);
+                    }
+                }
+            };
+
+            // if unsupported, run the polyfill
+            if (!rp.support()) {
+                // run once at least
+                rp.poly();
+
+                // rerun poly on an interval until onload
+                var run = w.setInterval(rp.poly, 500);
+                if (w.addEventListener) {
+                    w.addEventListener("load", function () {
+                        rp.poly();
+                        w.clearInterval(run);
+                    });
+                } else if (w.attachEvent) {
+                    w.attachEvent("onload", function () {
+                        rp.poly();
+                        w.clearInterval(run);
+                    });
+                }
+            }
+            // commonjs
+            if (typeof exports !== "undefined") {
+                exports.loadCSS = loadCSS;
+            }
+            else {
+                w.loadCSS = loadCSS;
+            }
+        }(typeof global !== "undefined" ? global : this));
+    </script>
+    <script src="//cdn.staticfile.org/jquery/3.2.1/jquery.min.js" defer></script>
+    <script src="/scripts/main.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+</head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >sq_Hayden&#39;s blog</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">Material Design系列最佳实践（一）</a>
+            </div>
+    </div>
+    
+    <a class="home-link" href=/>sq_Hayden's blog</a>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style=
+
+
+
+
+
+
+
+
+height:50vh;
+
+>
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            Material Design系列最佳实践（一）
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <!-- 文章页标签  -->
+            
+            <div class="post-intro-meta">
+                <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                <span class="post-intro-time">2018/06/04</span>
+                
+                <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                    <span class="iconfont-archer">&#xe602;</span>
+                    <span id="busuanzi_value_page_pv"></span>
+                </span>
+                
+                <span class="shareWrapper">
+                    <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                    <span class="shareText">Share</span>
+                    <ul class="shareList">
+                        <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                            <div class="share-qrcode"></div>
+                        </li>
+                        <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                        <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                        <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                        <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                    </ul>
+                </span>
+            </div>
+        
+    </div>
+</div>
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <h1 id="ToolBar-DrawerLayout-NavigationView实现滑动菜单效果"><a href="#ToolBar-DrawerLayout-NavigationView实现滑动菜单效果" class="headerlink" title="ToolBar+DrawerLayout+NavigationView实现滑动菜单效果"></a><center>ToolBar+DrawerLayout+NavigationView实现滑动菜单效果</center></h1><blockquote>
+<ul>
+<li>引言：Google新推出的界面设计语言–Material Design使得我们在针对android的界面UI开发上省力了不少，它涵盖了许许多多的优秀控件以及设计，本篇博客介绍了其中的几个控件组合实现滑动菜单栏的效果，下边就一起看看吧。</li>
+</ul>
+</blockquote>
+<hr>
+<h2 id="1-ToolBar的相关设置"><a href="#1-ToolBar的相关设置" class="headerlink" title="1.ToolBar的相关设置"></a>1.ToolBar的相关设置</h2><h3 id="1-ToolBar的概念"><a href="#1-ToolBar的概念" class="headerlink" title="1.ToolBar的概念"></a>1.ToolBar的概念</h3><p>　　Toolbar是Material Design所建议使用的顶部导航栏控件,用以取代以前的ActionBar。相对于ActionBar而言，ToolBar在使用上更加的灵活，不仅可以实现与ActionBar完全相似的效果，还可以使我们对顶部导航栏进行统一的设计与管理，从而定制一些个性化的导航栏，大大增加了灵活性。那么接下来就让我们看看如何去使用它。</p>
+<h3 id="2-ToolBar的引入"><a href="#2-ToolBar的引入" class="headerlink" title="2.ToolBar的引入"></a>2.ToolBar的引入</h3><p>　　在引入ToolBar之前，需要对我们的Activity主题进行设置。在默认的情况下，我们的Activity是采用的ActionBar来作为导航栏布局的，那么我们去到项目的资源路径下，找到<code></code>style.xml`可以看到此时所采用的默认布局，下边是我的默认布局:<br><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">    &lt;resources&gt;</span><br><span class="line"></span><br><span class="line">        &lt;!-- Base application theme. --&gt;</span><br><span class="line">        &lt;style name=<span class="string">"AppTheme"</span> parent=<span class="string">"Theme.AppCompat.Light.DarkActionBar"</span>&gt;</span><br><span class="line">            &lt;!-- Customize your theme here. --&gt;</span><br><span class="line">            &lt;item name="colorPrimary"&gt;@color/colorPrimary&lt;/item&gt;</span><br><span class="line">            &lt;item name="colorPrimaryDark"&gt;@color/colorPrimaryDark&lt;/item&gt;</span><br><span class="line">            &lt;item name="colorAccent"&gt;@color/colorAccent&lt;/item&gt;</span><br><span class="line">        &lt;/style&gt;</span><br><span class="line">    &lt;/resources&gt;</span><br><span class="line">```  </span><br><span class="line">　　那么，为了使用我们的ToolBar，需要禁用掉相关的ActionBar,所以我们改变系统的默认主题，从而完成对ActionBar的禁用操作。替换主题如下：</span><br><span class="line"></span><br><span class="line">```java</span><br><span class="line">   &lt;resources&gt;</span><br><span class="line"></span><br><span class="line">        &lt;!-- Base application theme. --&gt;</span><br><span class="line">        <span class="comment">//只需要替换为"NoActionBar即可"</span></span><br><span class="line">        &lt;style name=<span class="string">"AppTheme"</span> parent=<span class="string">"Theme.AppCompat.Light.NoActionBar"</span>&gt;</span><br><span class="line">            &lt;!-- Customize your theme here. --&gt;</span><br><span class="line">            &lt;item name="colorPrimary"&gt;@color/colorPrimary&lt;/item&gt;</span><br><span class="line">            &lt;item name="colorPrimaryDark"&gt;@color/colorPrimaryDark&lt;/item&gt;</span><br><span class="line">            &lt;item name="colorAccent"&gt;@color/colorAccent&lt;/item&gt;</span><br><span class="line">        &lt;/style&gt;</span><br><span class="line"></span><br><span class="line">&lt;/resources&gt;</span><br></pre></td></tr></table></figure></p>
+<p>　　接下来，我们就可以在主Activity布局中，引入ToolBar控件，如下所示:</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">&lt;RelativeLayout</span><br><span class="line">    android:layout_width=<span class="string">"match_parent"</span></span><br><span class="line">    android:layout_height=<span class="string">"match_parent"</span></span><br><span class="line">    android:background=<span class="string">"@color/gray"</span></span><br><span class="line">    &gt;</span><br><span class="line"></span><br><span class="line">    &lt;android.support.v7.widget.Toolbar</span><br><span class="line">        android:id=<span class="string">"@+id/toolbar"</span></span><br><span class="line">        android:layout_width=<span class="string">"match_parent"</span></span><br><span class="line">        android:layout_height=<span class="string">"?attr/actionBarSize"</span></span><br><span class="line">        android:background=<span class="string">"?attr/colorPrimary"</span></span><br><span class="line">        android:theme=<span class="string">"@style/ThemeOverlay.AppCompat.Dark.ActionBar"</span></span><br><span class="line">        app:popupTheme=<span class="string">"@style/ThemeOverlay.AppCompat.Light"</span></span><br><span class="line">        android:layout_alignParentTop=<span class="string">"true"</span></span><br><span class="line">        &gt;</span><br><span class="line">    &lt;/android.support.v7.widget.Toolbar&gt;</span><br><span class="line"></span><br><span class="line">&lt;/RelativeLayout&gt;</span><br></pre></td></tr></table></figure>
+<p>　　到了这一步，我们的导航栏控件就引入成功了，那么，上述的ToolBar控件中的相关参数究竟都代表了什么意思呢？<br>　　<em>height设置的意思是ToolBar的高度与系统的ActionBar的默认高度一致</em><br>　　<em>background设置了toolbar的背景色为系统的主色调</em><br>　　<em>在上面的时候，我们设置的主题是浅色系的风格，在这种风格下，ToolBar中的内容为了与背景作区分，将会显示为深色系，例如字体变黑色，显得比较难看，为了使其显示出与我们的总体布局相符合的状态，我们需要对其进行单独设置。一来要将ToolBar设置为深色系，二来将其中的内容(比如菜单项)设置为浅色系，这就是上述的两行主题设置的原因。</em><br>　　显示的效果如下：<br>　　<center><img src="https://raw.githubusercontent.com/sqHayden/sqHayden.github.io/master/avatar/materDesign/tool_bar.png" alt="toolBar"></center> </p>
+<h2 id="2-DrawerLayout的相关设置"><a href="#2-DrawerLayout的相关设置" class="headerlink" title="2.DrawerLayout的相关设置"></a>2.DrawerLayout的相关设置</h2><h3 id="1-DrawerLayout的概念"><a href="#1-DrawerLayout的概念" class="headerlink" title="1.DrawerLayout的概念"></a>1.DrawerLayout的概念</h3><p>　　DrawerLayout是谷歌推出的一款滑动布局，利用它我们可以很轻松地实现非常炫酷的滑动菜单效果。在以前，要实现滑动菜单效果，我们不仅需要去设计布局，更要控制菜单滑动出来的距离以及检测手势控制，可谓十分麻烦。而现在，这些都不需要了，我们只需要引入DrawerLayout布局，就能够完成滑动效果。那么，接下来我们就来看看如何去实现。</p>
+<h3 id="2-DrawerLayout的实现"><a href="#2-DrawerLayout的实现" class="headerlink" title="2.DrawerLayout的实现"></a>2.DrawerLayout的实现</h3><pre><code class="java">   &lt;android.support.v4.widget.DrawerLayout xmlns:android=<span class="string">"http://schemas.android.com/apk/res/android"</span>
+    android:layout_width=<span class="string">"match_parent"</span>
+    android:layout_height=<span class="string">"match_parent"</span>
+    android:id=<span class="string">"@+id/drawer_layout"</span>
+    xmlns:tools=<span class="string">"http://schemas.android.com/tools"</span>
+    xmlns:app=<span class="string">"http://schemas.android.com/apk/res-auto"</span>
+    tools:openDrawer=<span class="string">"start"</span>&gt;
+    &lt;RelativeLayout
+        android:layout_width=<span class="string">"match_parent"</span>
+        android:layout_height=<span class="string">"match_parent"</span>
+        android:background=<span class="string">"@color/gray"</span>
+        &gt;
+
+        &lt;android.support.v7.widget.Toolbar
+            android:id=<span class="string">"@+id/toolbar"</span>
+            android:layout_width=<span class="string">"match_parent"</span>
+            android:layout_height=<span class="string">"?attr/actionBarSize"</span>
+            android:background=<span class="string">"?attr/colorPrimary"</span>
+            android:theme=<span class="string">"@style/ThemeOverlay.AppCompat.Dark.ActionBar"</span>
+            app:popupTheme=<span class="string">"@style/ThemeOverlay.AppCompat.Light"</span>
+            android:layout_alignParentTop=<span class="string">"true"</span>
+            &gt;
+        &lt;/android.support.v7.widget.Toolbar&gt;
+
+    &lt;/RelativeLayout&gt;
+
+    &lt;TextView
+        android:layout_width=<span class="string">"400dp"</span>
+        android:layout_height=<span class="string">"match_parent"</span>
+        android:layout_gravity=<span class="string">"start"</span>
+        android:text=<span class="string">"这里是侧滑栏中的内容"</span>
+        android:textSize=<span class="string">"25sp"</span>
+        android:background=<span class="string">"@color/colorAccent"</span>
+        /&gt;
+
+&lt;/android.support.v4.widget.DrawerLayout&gt;
+</code></pre>
+<p>　　代码如上所示：可以看到在这里我们将DrawerLayout作为了根布局进行使用，这是因为如果它作为子布局的话，可能会出现一些滑动上面的问题，因此，建议作为根布局使用。在它的里面，其实分为了两大块，一个是我们进入后所看到的主界面布局(即代码中的RelativeLayout布局)，一个是我们的侧滑栏中的布局(TextView布局)。而这两块的区分，是依据我们在布局文件中的控件顺序决定的（先调用的将作为页面的主体布局）。下面针对DrawerLayout布局中的特殊属性作一个说明：<br>　　<em>DrawerLayout根布局中的openDrawer属性，表明了我们想要让侧滑栏从哪边划出，可设置为左、右以及自动，自动表明由系统判断，中文左划，需要从右读起的语言则会默认右划。</em><br>　　<em>另一个地方就是我们第二个控件布局（即作为侧滑栏的控件）需要设置一下划出方式，设置的方式是设定其<code>layout_gravity</code>属性，”start“表示左划，以此类推。</em><br>　　此时，我们的侧滑栏就已经可以展现出来了，效果如下图所示：<br>　　　<center><img src="https://raw.githubusercontent.com/sqHayden/sqHayden.github.io/master/avatar/materDesign/drawer_layout.png" alt="drawerLayout"></center><br>　　现在还有两个问题，一是我们发现左边是否有侧滑栏我们虽然知道，但是用户却并不知情，为了让用户了解到我们的界面拥有侧滑效果，我们需要在我们的<code>ToolBar</code>上，显示一个图标并与我们的侧滑栏绑定起来，这样用户就可以知道我们是带有侧滑栏的；二是我们虽然实现了侧滑的效果，但是可以看到，侧滑栏中的界面是很丑陋的，为此，我们需要引入NavigationVIew来填充我们的DrawLayout，从而使其变得漂亮美观。那么，接下来，我们就先解决第一个问题。  </p>
+<h3 id="3-DrawerLayout与ToolBar的绑定"><a href="#3-DrawerLayout与ToolBar的绑定" class="headerlink" title="3.DrawerLayout与ToolBar的绑定"></a>3.DrawerLayout与ToolBar的绑定</h3><p>　　ToolBar导航栏的最左侧，有一个名为<code>HomeAsUp</code>的控件，它的默认图标是一个小箭头，作用是用来返回到上一层活动，我们的思路就是将它的<code>HomeAsUp</code>控件图标和功能都进行改写，从而让它与NavigationView关联起来。具体做法如下，上代码：  </p>
+<pre><code class="java"> <span class="comment">/**</span>
+<span class="comment"> * 设置视图</span>
+<span class="comment"> */</span>
+<span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">initView</span><span class="params">()</span> </span>{
+    <span class="comment">//获取并设置Toolbar</span>
+    Toolbar toolbar = findViewById(R.id.toolbar);
+    setSupportActionBar(toolbar);
+    <span class="comment">//获取总视图</span>
+    mDrawerLayout = findViewById(R.id.drawer_layout);
+    ActionBar actionBar = getSupportActionBar();
+    actionBar.setTitle(<span class="string">"我是ToolBar"</span>);
+    <span class="keyword">if</span>(actionBar!=<span class="keyword">null</span>){
+        <span class="comment">//设置HomeAsUp控件显示</span>
+        actionBar.setDisplayHomeAsUpEnabled(<span class="keyword">true</span>);
+        <span class="comment">//变更HomeAsUp控件的图片</span>
+        actionBar.setHomeAsUpIndicator(R.mipmap.icon);
+    }
+}
+
+<span class="comment">/**</span>
+<span class="comment"> * 监测ToolBar的点击事件</span>
+<span class="comment"> */</span>
+<span class="meta">@Override</span>
+<span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">onOptionsItemSelected</span><span class="params">(MenuItem item)</span> </span>{
+    <span class="keyword">switch</span> (item.getItemId()){
+        <span class="comment">//android.R.id.Home作为HomeAsUp控件的id是不变的</span>
+        <span class="keyword">case</span> android.R.id.home:
+            <span class="comment">//监测到点击事件时打开DrawerLayout</span>
+            mDrawerLayout.openDrawer(GravityCompat.START);
+            <span class="keyword">break</span>;
+    }
+    <span class="keyword">return</span> <span class="keyword">true</span>;
+}
+</code></pre>
+<p>　　此时，我们就实现了点击ToolBar左上角的提示图标，展开DrawerLayout的操作。如下图所示:<br>　　<center><img src="https://raw.githubusercontent.com/sqHayden/sqHayden.github.io/master/avatar/materDesign/home_up.png" alt="HomeAsUp"></center>   </p>
+<h2 id="3-NavigationView的相关设置"><a href="#3-NavigationView的相关设置" class="headerlink" title="3.NavigationView的相关设置"></a>3.NavigationView的相关设置</h2><h3 id="1-NavigationView的概念"><a href="#1-NavigationView的概念" class="headerlink" title="1.NavigationView的概念"></a>1.NavigationView的概念</h3><p>　　NavigationView即导航布局，其使用场景大多就是结合DrawerLayout来实现比较炫酷的导航菜单栏的效果，我们还需要结合菜单布局，头布局，来一起完成最终的展示效果。不过不用着急，接下来我们就用代码去慢慢实现这个过程。  </p>
+<h3 id="2-NavigationView的实现"><a href="#2-NavigationView的实现" class="headerlink" title="2.NavigationView的实现"></a>2.NavigationView的实现</h3><p>　　首先是布局的引入，如下面所示，此时一定得注意，我们的这个布局是作为侧滑栏中的布局去填充的，因此，需要将其放在主布局的下面，作为第二个布局去使用。主布局代码如下:  </p>
+<pre><code class="java">  <span class="comment">//根布局自然是DrawerLayout了</span>
+  &lt;android.support.v4.widget.DrawerLayout xmlns:android=<span class="string">"http://schemas.android.com/apk/res/android"</span>
+    android:layout_width=<span class="string">"match_parent"</span>
+    android:layout_height=<span class="string">"match_parent"</span>
+    android:id=<span class="string">"@+id/drawer_layout"</span>
+    xmlns:tools=<span class="string">"http://schemas.android.com/tools"</span>
+    xmlns:app=<span class="string">"http://schemas.android.com/apk/res-auto"</span>
+    tools:openDrawer=<span class="string">"start"</span>&gt;
+    <span class="comment">//主布局相关视图</span>
+    &lt;RelativeLayout
+        android:layout_width=<span class="string">"match_parent"</span>
+        android:layout_height=<span class="string">"match_parent"</span>
+        android:background=<span class="string">"@color/gray"</span>
+        &gt;
+        <span class="comment">//这里是我们定义的ToolBar</span>
+        &lt;android.support.v7.widget.Toolbar
+            android:id=<span class="string">"@+id/toolbar"</span>
+            android:layout_width=<span class="string">"match_parent"</span>
+            android:layout_height=<span class="string">"?attr/actionBarSize"</span>
+            android:background=<span class="string">"?attr/colorPrimary"</span>
+            android:theme=<span class="string">"@style/ThemeOverlay.AppCompat.Dark.ActionBar"</span>
+            app:popupTheme=<span class="string">"@style/ThemeOverlay.AppCompat.Light"</span>
+            android:layout_alignParentTop=<span class="string">"true"</span>
+            &gt;
+        &lt;/android.support.v7.widget.Toolbar&gt;
+
+    &lt;/RelativeLayout&gt;
+    <span class="comment">//引入到DrawerLayout中去的NavigationView视图控件</span>
+    &lt;android.support.design.widget.NavigationView
+        android:id=<span class="string">"@+id/nav_view"</span>
+        android:layout_width=<span class="string">"400dp"</span>
+        android:layout_height=<span class="string">"match_parent"</span>
+        android:layout_gravity = <span class="string">"start"</span>
+        <span class="comment">//这里需要引入菜单布局</span>
+        app:menu=<span class="string">"@menu/nav_menu"</span>
+        <span class="comment">//这里引入头布局实现头布局效果</span>
+        app:headerLayout=<span class="string">"@layout/nav_header"</span>
+        &gt;
+    &lt;/android.support.design.widget.NavigationView&gt;
+
+&lt;/android.support.v4.widget.DrawerLayout&gt;
+</code></pre>
+<p>　　主布局的任务到这里就结束了，下来是我们的头布局，主要作用是用来给侧滑栏单独定制一个头部的布局，我们看看布局代码<code>nav_header.xml</code>:  </p>
+<pre><code class="java">&lt;?xml version=<span class="string">"1.0"</span> encoding=<span class="string">"utf-8"</span>?&gt;
+ &lt;RelativeLayout xmlns:android=<span class="string">"http://schemas.android.com/apk/res/android"</span>
+     android:layout_width=<span class="string">"match_parent"</span>
+     android:layout_height=<span class="string">"180dp"</span>
+     android:padding=<span class="string">"10dp"</span>
+     android:background=<span class="string">"?attr/colorPrimary"</span>
+     &gt;
+     &lt;de.hdodenhof.circleimageview.CircleImageView
+         android:id=<span class="string">"@+id/icon_image"</span>
+         android:layout_width=<span class="string">"70dp"</span>
+         android:layout_height=<span class="string">"70dp"</span>
+         android:src=<span class="string">"@mipmap/cat_head"</span>
+         android:layout_centerInParent=<span class="string">"true"</span>
+         /&gt;
+     &lt;TextView
+         android:id=<span class="string">"@+id/head_name"</span>
+         android:layout_width=<span class="string">"wrap_content"</span>
+         android:layout_height=<span class="string">"wrap_content"</span>
+         android:layout_below=<span class="string">"@id/icon_image"</span>
+         android:layout_marginTop=<span class="string">"10dp"</span>
+         android:layout_centerInParent=<span class="string">"true"</span>
+         android:textColor=<span class="string">"#FFF"</span>
+         android:textSize=<span class="string">"20sp"</span>
+         android:text=<span class="string">"小猫"</span>
+         /&gt;
+ &lt;/RelativeLayout&gt;
+</code></pre>
+<p>　　头布局里导入了一个图片处理库CircleImageView,其作用就是实现了将图片的形状转换为圆形的、类似头像的效果(最好是正方形的图)。<br>　　再就是最后一个，也就是我们的菜单栏布局：<code>nav_menu.xml</code>，其实现了菜单栏中的各项数据的图片信息以及名称等，如下所示：  </p>
+<pre><code class="java">   &lt;menu xmlns:android=<span class="string">"http://schemas.android.com/apk/res/android"</span>&gt;
+     <span class="comment">//此属性为了保证菜单栏各个Item子项均处于单选状态</span>
+     &lt;group android:checkableBehavior=<span class="string">"single"</span>&gt;
+         &lt;!--订单--&gt;
+         &lt;item android:id=<span class="string">"@+id/nav_order"</span>
+             android:icon=<span class="string">"@mipmap/order"</span>
+             android:title=<span class="string">"我的订单"</span>/&gt;
+         &lt;!--个人信息--&gt;
+         &lt;item android:id=<span class="string">"@+id/nav_identity"</span>
+             android:icon=<span class="string">"@mipmap/identity"</span>
+             android:title=<span class="string">"个人信息"</span>/&gt;
+         &lt;!--设置--&gt;
+         &lt;item android:id=<span class="string">"@+id/nav_setting"</span>
+             android:icon=<span class="string">"@mipmap/setting"</span>
+             android:title=<span class="string">"相关设置"</span>/&gt;
+     &lt;/group&gt;
+&lt;/menu&gt;
+</code></pre>
+<p>　　在这里我们需要注意，建立菜单栏的布局文件时，我们首先需要在<code>res</code>资源文件夹下新创建<code>menu</code>文件夹，这个文件夹不能通过New→<br>Directory去建立，而是应该通过New→Android Resource Directory→Resource Type→menu去建立一个menu的资源文件夹，然后在里面建立资源型xml文件<code>nav_menu.xml</code>这样才能成功创建。<br>　　最后，让我们在项目模块的build.gradle中，实现对图片处理库的引用，以及对NavigationView的引用:</p>
+<pre><code class="java"><span class="comment">//NavigationView控件相关包</span>
+compile <span class="string">'com.android.support:design:26.1.0'</span>
+compile <span class="string">'com.android.support:appcompat-v7:26.1.0'</span>
+<span class="comment">//头像圆角化相关</span>
+compile <span class="string">'de.hdodenhof:circleimageview:2.1.0'</span>
+</code></pre>
+<p>　　大功告成，让我们看看现在的效果吧：<br>　　　<center><img src="https://raw.githubusercontent.com/sqHayden/sqHayden.github.io/master/avatar/materDesign/header_list.png" alt="header"></center><br>　　最后，有两个小的知识点需要总结一下:<br>　　1.如何实现对NavigationView中的子项Item添加监听:  </p>
+<pre><code class="java"><span class="comment">//设置菜单选中监听器，关闭侧滑栏</span>
+<span class="comment">//获取侧滑栏</span>
+NavigationView navView = findViewById(R.id.nav_view);
+navView.setNavigationItemSelectedListener(<span class="keyword">new</span> NavigationView.OnNavigationItemSelectedListener() {
+    <span class="meta">@Override</span>
+    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">onNavigationItemSelected</span><span class="params">(@NonNull MenuItem item)</span> </span>{
+        mDrawerLayout.closeDrawers();
+        <span class="keyword">switch</span> (item.getItemId()){
+            <span class="comment">//监听菜单中各子项定义的ID即可</span>
+            <span class="keyword">case</span> R.id.nav_order:
+                <span class="keyword">break</span>;
+            <span class="keyword">case</span> R.id.nav_identity:
+                <span class="keyword">break</span>;
+        }
+        <span class="keyword">return</span> <span class="keyword">true</span>;
+    }
+});
+</code></pre>
+<p>   2.如何实现对头布局中的控件进行监听（<font color="red">注:若在此处刷出头布局，则在布局文件中无需设置对头布局文件的引用</font>）：</p>
+<pre><code class="java"><span class="comment">//用NavView去得到其头布局视图</span>
+View view = navView.inflateHeaderView(R.layout.nav_header);
+<span class="comment">//获取姓名控件</span>
+naviName = view.findViewById(R.id.head_name);
+</code></pre>
+<p>　　好了，这篇博客就写到这里，后期会继续总结一些Material Design中比较炫酷的控件实现,敬请期待。</p>
+<p>　　</p>
+
+    </article>
+    <!-- 前后页  -->
+    <ul class="post-paginator">
+        <li class="previous">
+            
+                <div class="prevSlogan">前一篇</div>
+                <a href= "/2018/05/26/map-gaode/" title= 高德地图开发(环境搭建及地图显示) >
+                    <div class="prevTitle">高德地图开发(环境搭建及地图显示)</div>
+                </a>
+            
+        </li>
+        <li class="next">
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+    <div id="lv-container" data-id="city" data-uid= MTAyMC8zNTU4OC8xMjEyNA==>
+        <script type="text/javascript">
+            (function (d, s) {
+                var j, e = d.getElementsByTagName(s)[0];
+                if (typeof LivereTower === 'function') { return; }
+                j = d.createElement(s);
+                j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+                j.async = true;
+
+                e.parentNode.insertBefore(j, e);
+            })(document, 'script');
+        </script>
+        <noscript>为正常使用来必力评论功能请激活JavaScript</noscript>
+    </div>
+
+<!-- City版安装代码已完成 -->
+    
+    
+    <!--PC版-->
+
+    <!--PC版-->
+
+
+    
+    <!-- 评论 -->
+</main>
+
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:1365233121@qq.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/sqhayden" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+            
+                <span class="iconfont-archer wechat" title=wechat>
+                  
+                  <img class="profile-qr" src="/assets/example_qr.jpg" />
+                </span>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+    </div>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- 不蒜子  -->
+    
+    <div class="busuanzi-container">
+        <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span>
+        </span>
+    </div>
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:50vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#ToolBar-DrawerLayout-NavigationView实现滑动菜单效果"><span class="toc-number">1.</span> <span class="toc-text">ToolBar+DrawerLayout+NavigationView实现滑动菜单效果</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-ToolBar的相关设置"><span class="toc-number">1.1.</span> <span class="toc-text">1.ToolBar的相关设置</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-ToolBar的概念"><span class="toc-number">1.1.1.</span> <span class="toc-text">1.ToolBar的概念</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-ToolBar的引入"><span class="toc-number">1.1.2.</span> <span class="toc-text">2.ToolBar的引入</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-DrawerLayout的相关设置"><span class="toc-number">1.2.</span> <span class="toc-text">2.DrawerLayout的相关设置</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-DrawerLayout的概念"><span class="toc-number">1.2.1.</span> <span class="toc-text">1.DrawerLayout的概念</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-DrawerLayout的实现"><span class="toc-number">1.2.2.</span> <span class="toc-text">2.DrawerLayout的实现</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-DrawerLayout与ToolBar的绑定"><span class="toc-number">1.2.3.</span> <span class="toc-text">3.DrawerLayout与ToolBar的绑定</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-NavigationView的相关设置"><span class="toc-number">1.3.</span> <span class="toc-text">3.NavigationView的相关设置</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-NavigationView的概念"><span class="toc-number">1.3.1.</span> <span class="toc-text">1.NavigationView的概念</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-NavigationView的实现"><span class="toc-number">1.3.2.</span> <span class="toc-text">2.NavigationView的实现</span></a></li></ol></li></ol></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">文章</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">标签</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">类别</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-archive"> Total : 8 </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2018 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/04</span><a class="archive-post-title" href= "/2018/06/04/drawer_navi/" >Material Design系列最佳实践（一）</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/26</span><a class="archive-post-title" href= "/2018/05/26/map-gaode/" >高德地图开发(环境搭建及地图显示)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/17</span><a class="archive-post-title" href= "/2018/05/17/listview/" >ListView控件复用详解</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/16</span><a class="archive-post-title" href= "/2018/05/16/opengl-es/" >OpenGL ES实现3D星空背景旋转立方体</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/16</span><a class="archive-post-title" href= "/2018/05/16/activity/" >Activity生命周期详解</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/12</span><a class="archive-post-title" href= "/2018/03/12/my-first-blog/" >博客启程之路</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/12</span><a class="archive-post-title" href= "/2018/03/12/README/" >[Untitled Post]</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/12</span><a class="archive-post-title" href= "/2018/03/12/hello-world/" >Hello World</a>
+        </li>
+    
+    </div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br/>
+    1、请确保node版本大于6.2<br/>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br/>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br/>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+    </div>
+</div> 
+
+    <script>
+    var siteMeta = {
+        root: '/',
+        author: 'hayden'
+    }
+</script>
+    <!-- busuanzi  -->
+    
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+    
+    </body>
+</html>
+
+
