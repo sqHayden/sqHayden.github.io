@@ -9,7 +9,7 @@
 <head>
     <meta http-equiv="content-type" content="text/html; charset=utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" >
-    <title>Material Design系列最佳实践（一） · sq的博客主页</title>
+    <title>Material Design系列实践(一) · sq的博客主页</title>
     <style type="text/css">
     @font-face {
         font-family: 'Oswald-Regular';
@@ -265,7 +265,7 @@
                 <a href="/" >sq_Hayden&#39;s blog</a>
             </div>
             <div class="post-title">
-                <a href="#" class="post-name">Material Design系列最佳实践（一）</a>
+                <a href="#" class="post-name">Material Design系列实践(一)</a>
             </div>
     </div>
     
@@ -297,7 +297,7 @@ height:50vh;
         <h1 class="intro-title">
             <!-- 主页  -->
             
-            Material Design系列最佳实践（一）
+            Material Design系列实践(一)
             <!-- 404 -->
             
         </h1>
@@ -346,29 +346,31 @@ height:50vh;
     <article class="article-entry">
         <h1 id="ToolBar-DrawerLayout-NavigationView实现滑动菜单效果"><a href="#ToolBar-DrawerLayout-NavigationView实现滑动菜单效果" class="headerlink" title="ToolBar+DrawerLayout+NavigationView实现滑动菜单效果"></a><center>ToolBar+DrawerLayout+NavigationView实现滑动菜单效果</center></h1><blockquote>
 <ul>
-<li>引言：Google新推出的界面设计语言–Material Design使得我们在针对android的界面UI开发上省力了不少，它涵盖了许许多多的优秀控件以及设计，本篇博客介绍了其中的几个控件组合实现滑动菜单栏的效果，下边就一起看看吧。</li>
+<li>引言：Google新推出的界面设计语言–Material Design使得我们在针对android的界面UI开发上省力了不少，它涵盖了许许多多的优秀控件以及设计，本篇博客介绍了其中的几个控件组合实现滑动菜单栏的效果，下面就一起来看看吧。</li>
 </ul>
 </blockquote>
 <hr>
 <h2 id="1-ToolBar的相关设置"><a href="#1-ToolBar的相关设置" class="headerlink" title="1.ToolBar的相关设置"></a>1.ToolBar的相关设置</h2><h3 id="1-ToolBar的概念"><a href="#1-ToolBar的概念" class="headerlink" title="1.ToolBar的概念"></a>1.ToolBar的概念</h3><p>　　Toolbar是Material Design所建议使用的顶部导航栏控件,用以取代以前的ActionBar。相对于ActionBar而言，ToolBar在使用上更加的灵活，不仅可以实现与ActionBar完全相似的效果，还可以使我们对顶部导航栏进行统一的设计与管理，从而定制一些个性化的导航栏，大大增加了灵活性。那么接下来就让我们看看如何去使用它。</p>
-<h3 id="2-ToolBar的引入"><a href="#2-ToolBar的引入" class="headerlink" title="2.ToolBar的引入"></a>2.ToolBar的引入</h3><p>　　在引入ToolBar之前，需要对我们的Activity主题进行设置。在默认的情况下，我们的Activity是采用的ActionBar来作为导航栏布局的，那么我们去到项目的资源路径下，找到<code></code>style.xml`可以看到此时所采用的默认布局，下边是我的默认布局:<br><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">    &lt;resources&gt;</span><br><span class="line"></span><br><span class="line">        &lt;!-- Base application theme. --&gt;</span><br><span class="line">        &lt;style name=<span class="string">"AppTheme"</span> parent=<span class="string">"Theme.AppCompat.Light.DarkActionBar"</span>&gt;</span><br><span class="line">            &lt;!-- Customize your theme here. --&gt;</span><br><span class="line">            &lt;item name="colorPrimary"&gt;@color/colorPrimary&lt;/item&gt;</span><br><span class="line">            &lt;item name="colorPrimaryDark"&gt;@color/colorPrimaryDark&lt;/item&gt;</span><br><span class="line">            &lt;item name="colorAccent"&gt;@color/colorAccent&lt;/item&gt;</span><br><span class="line">        &lt;/style&gt;</span><br><span class="line">    &lt;/resources&gt;</span><br><span class="line">```  </span><br><span class="line">　　那么，为了使用我们的ToolBar，需要禁用掉相关的ActionBar,所以我们改变系统的默认主题，从而完成对ActionBar的禁用操作。替换主题如下：</span><br><span class="line"></span><br><span class="line">```java</span><br><span class="line">   &lt;resources&gt;</span><br><span class="line"></span><br><span class="line">        &lt;!-- Base application theme. --&gt;</span><br><span class="line">        <span class="comment">//只需要替换为"NoActionBar即可"</span></span><br><span class="line">        &lt;style name=<span class="string">"AppTheme"</span> parent=<span class="string">"Theme.AppCompat.Light.NoActionBar"</span>&gt;</span><br><span class="line">            &lt;!-- Customize your theme here. --&gt;</span><br><span class="line">            &lt;item name="colorPrimary"&gt;@color/colorPrimary&lt;/item&gt;</span><br><span class="line">            &lt;item name="colorPrimaryDark"&gt;@color/colorPrimaryDark&lt;/item&gt;</span><br><span class="line">            &lt;item name="colorAccent"&gt;@color/colorAccent&lt;/item&gt;</span><br><span class="line">        &lt;/style&gt;</span><br><span class="line"></span><br><span class="line">&lt;/resources&gt;</span><br></pre></td></tr></table></figure></p>
+<h3 id="2-ToolBar的引入"><a href="#2-ToolBar的引入" class="headerlink" title="2.ToolBar的引入"></a>2.ToolBar的引入</h3><p>　　在引入ToolBar之前，需要对我们的Activity主题进行设置。在默认的情况下，我们的Activity是采用的ActionBar来作为导航栏布局的，那么我们去到项目的资源路径下，找到<code>style.xml</code>查看此时所采用的默认布局，下面是我的默认布局:<br><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">    &lt;resources&gt;</span><br><span class="line"></span><br><span class="line">        &lt;!-- Base application theme. --&gt;</span><br><span class="line">        &lt;style name=<span class="string">"AppTheme"</span> parent=<span class="string">"Theme.AppCompat.Light.DarkActionBar"</span>&gt;</span><br><span class="line">            &lt;!-- Customize your theme here. --&gt;</span><br><span class="line">            &lt;item name="colorPrimary"&gt;@color/colorPrimary&lt;/item&gt;</span><br><span class="line">            &lt;item name="colorPrimaryDark"&gt;@color/colorPrimaryDark&lt;/item&gt;</span><br><span class="line">            &lt;item name="colorAccent"&gt;@color/colorAccent&lt;/item&gt;</span><br><span class="line">        &lt;/style&gt;</span><br><span class="line"></span><br><span class="line">    &lt;/resources&gt;</span><br><span class="line">```  </span><br><span class="line"></span><br><span class="line">　　那么，为了替换为ToolBar控件，就需要禁用掉相关的ActionBar,所以我们改变系统的默认主题，从而完成对ActionBar的禁用操作。替换主题如下：</span><br><span class="line"></span><br><span class="line">```java</span><br><span class="line">   &lt;resources&gt;</span><br><span class="line"></span><br><span class="line">        &lt;!-- Base application theme. --&gt;</span><br><span class="line">        <span class="comment">//只需要替换为"NoActionBar即可"</span></span><br><span class="line">        &lt;style name=<span class="string">"AppTheme"</span> parent=<span class="string">"Theme.AppCompat.Light.NoActionBar"</span>&gt;</span><br><span class="line">            &lt;!-- Customize your theme here. --&gt;</span><br><span class="line">            &lt;item name="colorPrimary"&gt;@color/colorPrimary&lt;/item&gt;</span><br><span class="line">            &lt;item name="colorPrimaryDark"&gt;@color/colorPrimaryDark&lt;/item&gt;</span><br><span class="line">            &lt;item name="colorAccent"&gt;@color/colorAccent&lt;/item&gt;</span><br><span class="line">        &lt;/style&gt;</span><br><span class="line"></span><br><span class="line">&lt;/resources&gt;</span><br></pre></td></tr></table></figure></p>
 <p>　　接下来，我们就可以在主Activity布局中，引入ToolBar控件，如下所示:</p>
-<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">&lt;RelativeLayout</span><br><span class="line">    android:layout_width=<span class="string">"match_parent"</span></span><br><span class="line">    android:layout_height=<span class="string">"match_parent"</span></span><br><span class="line">    android:background=<span class="string">"@color/gray"</span></span><br><span class="line">    &gt;</span><br><span class="line"></span><br><span class="line">    &lt;android.support.v7.widget.Toolbar</span><br><span class="line">        android:id=<span class="string">"@+id/toolbar"</span></span><br><span class="line">        android:layout_width=<span class="string">"match_parent"</span></span><br><span class="line">        android:layout_height=<span class="string">"?attr/actionBarSize"</span></span><br><span class="line">        android:background=<span class="string">"?attr/colorPrimary"</span></span><br><span class="line">        android:theme=<span class="string">"@style/ThemeOverlay.AppCompat.Dark.ActionBar"</span></span><br><span class="line">        app:popupTheme=<span class="string">"@style/ThemeOverlay.AppCompat.Light"</span></span><br><span class="line">        android:layout_alignParentTop=<span class="string">"true"</span></span><br><span class="line">        &gt;</span><br><span class="line">    &lt;/android.support.v7.widget.Toolbar&gt;</span><br><span class="line"></span><br><span class="line">&lt;/RelativeLayout&gt;</span><br></pre></td></tr></table></figure>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">&lt;RelativeLayout</span><br><span class="line">    android:layout_width=<span class="string">"match_parent"</span></span><br><span class="line">    android:layout_height=<span class="string">"match_parent"</span></span><br><span class="line">    <span class="comment">//这里为了和网页的白色背景作区分，将主视图背景设置为灰色</span></span><br><span class="line">    android:background=<span class="string">"@color/gray"</span></span><br><span class="line">    &gt;</span><br><span class="line"></span><br><span class="line">    &lt;android.support.v7.widget.Toolbar</span><br><span class="line">        android:id=<span class="string">"@+id/toolbar"</span></span><br><span class="line">        android:layout_width=<span class="string">"match_parent"</span></span><br><span class="line">        android:layout_height=<span class="string">"?attr/actionBarSize"</span></span><br><span class="line">        android:background=<span class="string">"?attr/colorPrimary"</span></span><br><span class="line">        <span class="comment">//将ToolBar设置为深色系</span></span><br><span class="line">        android:theme=<span class="string">"@style/ThemeOverlay.AppCompat.Dark.ActionBar"</span></span><br><span class="line">        <span class="comment">//将菜单项等子项设置为浅色系</span></span><br><span class="line">        app:popupTheme=<span class="string">"@style/ThemeOverlay.AppCompat.Light"</span></span><br><span class="line">        android:layout_alignParentTop=<span class="string">"true"</span></span><br><span class="line">        &gt;</span><br><span class="line">    &lt;/android.support.v7.widget.Toolbar&gt;</span><br><span class="line"></span><br><span class="line">&lt;/RelativeLayout&gt;</span><br></pre></td></tr></table></figure>
 <p>　　到了这一步，我们的导航栏控件就引入成功了，那么，上述的ToolBar控件中的相关参数究竟都代表了什么意思呢？<br>　　<em>height设置的意思是ToolBar的高度与系统的ActionBar的默认高度一致</em><br>　　<em>background设置了toolbar的背景色为系统的主色调</em><br>　　<em>在上面的时候，我们设置的主题是浅色系的风格，在这种风格下，ToolBar中的内容为了与背景作区分，将会显示为深色系，例如字体变黑色，显得比较难看，为了使其显示出与我们的总体布局相符合的状态，我们需要对其进行单独设置。一来要将ToolBar设置为深色系，二来将其中的内容(比如菜单项)设置为浅色系，这就是上述的两行主题设置的原因。</em><br>　　显示的效果如下：<br>　　<center><img src="https://raw.githubusercontent.com/sqHayden/sqHayden.github.io/master/avatar/materDesign/tool_bar.png" alt="toolBar"></center> </p>
-<h2 id="2-DrawerLayout的相关设置"><a href="#2-DrawerLayout的相关设置" class="headerlink" title="2.DrawerLayout的相关设置"></a>2.DrawerLayout的相关设置</h2><h3 id="1-DrawerLayout的概念"><a href="#1-DrawerLayout的概念" class="headerlink" title="1.DrawerLayout的概念"></a>1.DrawerLayout的概念</h3><p>　　DrawerLayout是谷歌推出的一款滑动布局，利用它我们可以很轻松地实现非常炫酷的滑动菜单效果。在以前，要实现滑动菜单效果，我们不仅需要去设计布局，更要控制菜单滑动出来的距离以及检测手势控制，可谓十分麻烦。而现在，这些都不需要了，我们只需要引入DrawerLayout布局，就能够完成滑动效果。那么，接下来我们就来看看如何去实现。</p>
-<h3 id="2-DrawerLayout的实现"><a href="#2-DrawerLayout的实现" class="headerlink" title="2.DrawerLayout的实现"></a>2.DrawerLayout的实现</h3><pre><code class="java">   &lt;android.support.v4.widget.DrawerLayout xmlns:android=<span class="string">"http://schemas.android.com/apk/res/android"</span>
+<h2 id="2-DrawerLayout的相关设置"><a href="#2-DrawerLayout的相关设置" class="headerlink" title="2.DrawerLayout的相关设置"></a>2.DrawerLayout的相关设置</h2><h3 id="1-DrawerLayout的概念"><a href="#1-DrawerLayout的概念" class="headerlink" title="1.DrawerLayout的概念"></a>1.DrawerLayout的概念</h3><p>　　DrawerLayout是谷歌推出的一款滑动布局，利用它我们可以很轻松地实现非常炫酷的滑动菜单效果。在以前，要实现滑动菜单效果，我们不仅需要去设计布局，更要计算菜单滑动出来的距离以及检测手势控制，可谓十分麻烦。而现在，这些都不需要了，我们只需要引入DrawerLayout布局，就能够完成滑动效果。那么，接下来我们看看如何去实现。</p>
+<h3 id="2-DrawerLayout的实现"><a href="#2-DrawerLayout的实现" class="headerlink" title="2.DrawerLayout的实现"></a>2.DrawerLayout的实现</h3><pre><code class="java">   <span class="comment">//这里使用DrawerLayout作为根布局</span>
+   &lt;android.support.v4.widget.DrawerLayout xmlns:android=<span class="string">"http://schemas.android.com/apk/res/android"</span>
     android:layout_width=<span class="string">"match_parent"</span>
     android:layout_height=<span class="string">"match_parent"</span>
     android:id=<span class="string">"@+id/drawer_layout"</span>
     xmlns:tools=<span class="string">"http://schemas.android.com/tools"</span>
     xmlns:app=<span class="string">"http://schemas.android.com/apk/res-auto"</span>
     tools:openDrawer=<span class="string">"start"</span>&gt;
+    <span class="comment">//这是主视图布局</span>
     &lt;RelativeLayout
         android:layout_width=<span class="string">"match_parent"</span>
         android:layout_height=<span class="string">"match_parent"</span>
         android:background=<span class="string">"@color/gray"</span>
         &gt;
-
+        <span class="comment">//引入ToolBar</span>
         &lt;android.support.v7.widget.Toolbar
             android:id=<span class="string">"@+id/toolbar"</span>
             android:layout_width=<span class="string">"match_parent"</span>
@@ -381,7 +383,7 @@ height:50vh;
         &lt;/android.support.v7.widget.Toolbar&gt;
 
     &lt;/RelativeLayout&gt;
-
+    <span class="comment">//这是侧滑栏布局</span>
     &lt;TextView
         android:layout_width=<span class="string">"400dp"</span>
         android:layout_height=<span class="string">"match_parent"</span>
@@ -430,7 +432,7 @@ height:50vh;
 }
 </code></pre>
 <p>　　此时，我们就实现了点击ToolBar左上角的提示图标，展开DrawerLayout的操作。如下图所示:<br>　　<center><img src="https://raw.githubusercontent.com/sqHayden/sqHayden.github.io/master/avatar/materDesign/home_up.png" alt="HomeAsUp"></center>   </p>
-<h2 id="3-NavigationView的相关设置"><a href="#3-NavigationView的相关设置" class="headerlink" title="3.NavigationView的相关设置"></a>3.NavigationView的相关设置</h2><h3 id="1-NavigationView的概念"><a href="#1-NavigationView的概念" class="headerlink" title="1.NavigationView的概念"></a>1.NavigationView的概念</h3><p>　　NavigationView即导航布局，其使用场景大多就是结合DrawerLayout来实现比较炫酷的导航菜单栏的效果，我们还需要结合菜单布局，头布局，来一起完成最终的展示效果。不过不用着急，接下来我们就用代码去慢慢实现这个过程。  </p>
+<h2 id="3-NavigationView的相关设置"><a href="#3-NavigationView的相关设置" class="headerlink" title="3.NavigationView的相关设置"></a>3.NavigationView的相关设置</h2><h3 id="1-NavigationView的概念"><a href="#1-NavigationView的概念" class="headerlink" title="1.NavigationView的概念"></a>1.NavigationView的概念</h3><p>　　NavigationView即导航布局，其使用场景大多就是结合DrawerLayout来实现比较炫酷的导航菜单栏的效果，我们还需要结合菜单布局，头布局，来一起完成最终的展示。不过不用着急，接下来我们就用代码去慢慢实现这个过程。  </p>
 <h3 id="2-NavigationView的实现"><a href="#2-NavigationView的实现" class="headerlink" title="2.NavigationView的实现"></a>2.NavigationView的实现</h3><p>　　首先是布局的引入，如下面所示，此时一定得注意，我们的这个布局是作为侧滑栏中的布局去填充的，因此，需要将其放在主布局的下面，作为第二个布局去使用。主布局代码如下:  </p>
 <pre><code class="java">  <span class="comment">//根布局自然是DrawerLayout了</span>
   &lt;android.support.v4.widget.DrawerLayout xmlns:android=<span class="string">"http://schemas.android.com/apk/res/android"</span>
@@ -521,14 +523,14 @@ height:50vh;
      &lt;/group&gt;
 &lt;/menu&gt;
 </code></pre>
-<p>　　在这里我们需要注意，建立菜单栏的布局文件时，我们首先需要在<code>res</code>资源文件夹下新创建<code>menu</code>文件夹，这个文件夹不能通过New→<br>Directory去建立，而是应该通过New→Android Resource Directory→Resource Type→menu去建立一个menu的资源文件夹，然后在里面建立资源型xml文件<code>nav_menu.xml</code>这样才能成功创建。<br>　　最后，让我们在项目模块的build.gradle中，实现对图片处理库的引用，以及对NavigationView的引用:</p>
+<p>　　在这里我们需要注意，建立菜单栏的布局文件时，我们首先需要在<code>res</code>资源文件夹下新创建<code>menu</code>文件夹，这个文件夹不能通过New→Directory去建立，而是应该通过New→Android Resource Directory→Resource Type→menu去建立一个menu的资源文件夹，然后在里面建立资源型xml文件<code>nav_menu.xml</code>这样才能成功创建。<br>　　最后，让我们在项目模块的build.gradle中，实现对图片处理库的引用，以及对NavigationView的引用:</p>
 <pre><code class="java"><span class="comment">//NavigationView控件相关包</span>
 compile <span class="string">'com.android.support:design:26.1.0'</span>
 compile <span class="string">'com.android.support:appcompat-v7:26.1.0'</span>
 <span class="comment">//头像圆角化相关</span>
 compile <span class="string">'de.hdodenhof:circleimageview:2.1.0'</span>
 </code></pre>
-<p>　　大功告成，让我们看看现在的效果吧：<br>　　　<center><img src="https://raw.githubusercontent.com/sqHayden/sqHayden.github.io/master/avatar/materDesign/header_list.png" alt="header"></center><br>　　最后，有两个小的知识点需要总结一下:<br>　　1.如何实现对NavigationView中的子项Item添加监听:  </p>
+<p>　　大功告成，让我们看看现在的效果吧：<br>　　　<center><img src="https://raw.githubusercontent.com/sqHayden/sqHayden.github.io/master/avatar/materDesign/header_list.png" alt="header"></center><br>　　到这里，我们的功能算是实现了。最后，有两个小的知识点需要总结一下:<br>　　1.如何实现对NavigationView中的子项Item添加监听:  </p>
 <pre><code class="java"><span class="comment">//设置菜单选中监听器，关闭侧滑栏</span>
 <span class="comment">//获取侧滑栏</span>
 NavigationView navView = findViewById(R.id.nav_view);
@@ -801,7 +803,7 @@ top:50vh;
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">06/04</span><a class="archive-post-title" href= "/2018/06/04/drawer_navi/" >Material Design系列最佳实践（一）</a>
+            <span class="archive-post-date">06/04</span><a class="archive-post-title" href= "/2018/06/04/drawer_navi/" >Material Design系列实践(一)</a>
         </li>
     
     
