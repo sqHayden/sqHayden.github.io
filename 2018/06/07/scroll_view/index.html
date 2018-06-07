@@ -361,7 +361,7 @@ viewPager.setAdapter(myAdapter);
 <p>　　效果如下:<br>　　　　<center><img src="https://raw.githubusercontent.com/sqHayden/sqHayden.github.io/master/avatar/scroll_view/fragment_scrolled.gif" alt="viewPager"></center>  
 　　　　</p>
 <h2 id="2-ViewPager实现无限循环滑动效果"><a href="#2-ViewPager实现无限循环滑动效果" class="headerlink" title="2.ViewPager实现无限循环滑动效果"></a>2.ViewPager实现无限循环滑动效果</h2><p>　　从上述ViewPager的切换中我们可以看到，向下到达第四张图时，将不可往下继续滑动，同理，向上滑动到第一张时，也无法继续上滑。而我们要实现的效果便是，当滑动到第四张时，接着可以向下滑动回到第一张，向上滑动到第一张时，接着上滑回到末尾的第四张。怎么样实现呢？  </p>
-<h3 id="1-思路分析"><a href="#1-思路分析" class="headerlink" title="1.思路分析"></a>1.思路分析</h3><p>　　我们这么来想，此时有四张图片处于我们的总体里，且依次从左到右排列。当我们滑到尾部的时候，如果接着还有一张图续在尾部后面，与第一张图相同，这样当我们接着向右滑动时，就会切回到首页的界面(但此时其实是我们在末尾新加的那张)。与此同时，我们将ViewPager的position替换为1，将ViewPager的Item替换为起始位置的Item项，这样当我们继续右滑，就可以实现轮播效果。同理，放一张图在最左边的首位，与第四张图相同，切到时替换为第四张图，即可完成整体轮播效果。  </p>
+<h3 id="1-思路分析"><a href="#1-思路分析" class="headerlink" title="1.思路分析"></a>1.思路分析</h3><p>　　我们这么来想，此时有四张图片处于我们的总体里，且依次从左到右排列。当我们滑到尾部的时候，如果接着还有一张图续在尾部后面，与第一张图相同，这样当我们接着向右滑动时，就会切回到首页的界面(但此时其实是我们在末尾新加的那张)。与此同时，我们将ViewPager的position替换为1，将ViewPager的Item替换为第一张图的Item项，这样当我们继续右滑，就可以实现轮播效果。同理，放一张图在最左边作为ViewPager的第一个Item项，与第四张图相同，切到时替换为第四张图，即可完成整体轮播效果。  </p>
 <h3 id="2-画图分析"><a href="#2-画图分析" class="headerlink" title="2.画图分析"></a>2.画图分析</h3><p>　　<center><img src="https://raw.githubusercontent.com/sqHayden/sqHayden.github.io/master/avatar/scroll_view/viewpager_analyse.png" alt="viewPager"></center>  </p>
 <h3 id="3-代码实现"><a href="#3-代码实现" class="headerlink" title="3.代码实现"></a>3.代码实现</h3><p>　　首先，我们需要定义出六个页面，同样在此处用Fragment实现:  </p>
 <pre><code class="java"><span class="comment">/**</span>
@@ -919,6 +919,14 @@ top:50vh;
     
     
     
+    
+    
+    
+    
+    
+    
+    
+    
     <div class="total-archive"> Total : 10 </div>
     
     <div class="post-archive">
@@ -931,6 +939,11 @@ top:50vh;
     
     
         <li class="archive-post-item">
+            <span class="archive-post-date">06/07</span><a class="archive-post-title" href= "/2018/06/07/scroll_view/" >ViewPager无限循环自动轮播图的实现</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
             <span class="archive-post-date">06/05</span><a class="archive-post-title" href= "/2018/06/05/tab_pager/" >Material Design系列实践(二)</a>
         </li>
     
@@ -938,29 +951,6 @@ top:50vh;
         <li class="archive-post-item">
             <span class="archive-post-date">06/04</span><a class="archive-post-title" href= "/2018/06/04/drawer_navi/" >Material Design系列实践(一)</a>
         </li>
-    
-    
-    
-    
-    
-        </ul>
-    
-    <div class="archive-year"> Invalid date </div>
-    <ul class="year-list">
-    
-    
-        <li class="archive-post-item">
-            <span class="archive-post-date">Invalid date</span><a class="archive-post-title" href= "/2018/06/07/scroll_view/" >ViewPager无限循环自动轮播图的实现</a>
-        </li>
-    
-    
-    
-    
-    
-        </ul>
-    
-    <div class="archive-year"> 2018 </div>
-    <ul class="year-list">
     
     
         <li class="archive-post-item">
