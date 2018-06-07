@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html>
+    <!-- title -->
+
+
+
+
+
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" >
+    <title>ViewPager无限循环自动轮播图的实现 · sq的博客主页</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+        box-shadow: 0 0 3px 0 rgba(0, 0, 0, 0.7);
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s 1;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href= /css/style.css?v=20180311 as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="stylesheet" type="text/css" href= /css/mobile.css?v=20180311 media="(max-width: 980px)"/>
+    <link rel="icon" href= /assets/catgirl.ico>
+    <script>
+  // load webfont-loader async, and add callback function
+  function async(u, c) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+  
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntroTags = document.getElementsByClassName('post-intro-tags')[0],
+        postIntroMeat = document.getElementsByClassName('post-intro-meta')[0];
+      if (postIntroTags) {
+        postIntroTags.classList.add('post-fade-in');
+      }
+      if (postIntroMeat) {
+        postIntroMeat.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  async("https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", asyncCb)
+</script>
+    <script>
+        (function (w) {
+            "use strict";
+            // rel=preload support test
+            if (!w.loadCSS) {
+                w.loadCSS = function () { };
+            }
+            // define on the loadCSS obj
+            var rp = loadCSS.relpreload = {};
+            // rel=preload feature support test
+            // runs once and returns a function for compat purposes
+            rp.support = (function () {
+                var ret;
+                try {
+                    ret = w.document.createElement("link").relList.supports("preload");
+                } catch (e) {
+                    ret = false;
+                }
+                return function () {
+                    return ret;
+                };
+            })();
+
+            // if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+            // then change that media back to its intended value on load
+            rp.bindMediaToggle = function (link) {
+                // remember existing media attr for ultimate state, or default to 'all'
+                var finalMedia = link.media || "all";
+
+                function enableStylesheet() {
+                    link.media = finalMedia;
+                }
+
+                // bind load handlers to enable media
+                if (link.addEventListener) {
+                    link.addEventListener("load", enableStylesheet);
+                } else if (link.attachEvent) {
+                    link.attachEvent("onload", enableStylesheet);
+                }
+
+                // Set rel and non-applicable media type to start an async request
+                // note: timeout allows this to happen async to let rendering continue in IE
+                setTimeout(function () {
+                    link.rel = "stylesheet";
+                    link.media = "only x";
+                });
+                // also enable media after 3 seconds,
+                // which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+                setTimeout(enableStylesheet, 3000);
+            };
+
+            // loop through link elements in DOM
+            rp.poly = function () {
+                // double check this to prevent external calls from running
+                if (rp.support()) {
+                    return;
+                }
+                var links = w.document.getElementsByTagName("link");
+                for (var i = 0; i < links.length; i++) {
+                    var link = links[i];
+                    // qualify links to those with rel=preload and as=style attrs
+                    if (link.rel === "preload" && link.getAttribute("as") === "style" && !link.getAttribute("data-loadcss")) {
+                        // prevent rerunning on link
+                        link.setAttribute("data-loadcss", true);
+                        // bind listeners to toggle media back
+                        rp.bindMediaToggle(link);
+                    }
+                }
+            };
+
+            // if unsupported, run the polyfill
+            if (!rp.support()) {
+                // run once at least
+                rp.poly();
+
+                // rerun poly on an interval until onload
+                var run = w.setInterval(rp.poly, 500);
+                if (w.addEventListener) {
+                    w.addEventListener("load", function () {
+                        rp.poly();
+                        w.clearInterval(run);
+                    });
+                } else if (w.attachEvent) {
+                    w.attachEvent("onload", function () {
+                        rp.poly();
+                        w.clearInterval(run);
+                    });
+                }
+            }
+            // commonjs
+            if (typeof exports !== "undefined") {
+                exports.loadCSS = loadCSS;
+            }
+            else {
+                w.loadCSS = loadCSS;
+            }
+        }(typeof global !== "undefined" ? global : this));
+    </script>
+    <script src="//cdn.staticfile.org/jquery/3.2.1/jquery.min.js" defer></script>
+    <script src="/scripts/main.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+</head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >sq_Hayden&#39;s blog</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">ViewPager无限循环自动轮播图的实现</a>
+            </div>
+    </div>
+    
+    <a class="home-link" href=/>sq_Hayden's blog</a>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style=
+
+
+
+
+
+
+
+
+height:50vh;
+
+>
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            ViewPager无限循环自动轮播图的实现
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <!-- 文章页标签  -->
+            
+            <div class="post-intro-meta">
+                <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                <span class="post-intro-time">2018/06/07</span>
+                
+                <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                    <span class="iconfont-archer">&#xe602;</span>
+                    <span id="busuanzi_value_page_pv"></span>
+                </span>
+                
+                <span class="shareWrapper">
+                    <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                    <span class="shareText">Share</span>
+                    <ul class="shareList">
+                        <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                            <div class="share-qrcode"></div>
+                        </li>
+                        <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                        <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                        <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                        <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                    </ul>
+                </span>
+            </div>
+        
+    </div>
+</div>
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <h1 id="ViewPager实现循环轮播图"><a href="#ViewPager实现循环轮播图" class="headerlink" title="ViewPager实现循环轮播图"></a><center>ViewPager实现循环轮播图</center></h1><blockquote>
+<ul>
+<li>引言：以前利用自定义控件写过一次轮播图，十分的繁琐，既要监听用户手势的滑动操作，又需要根据点坐标处理图片的平移事件等等。今天通过ViewPager发现实现轮播效果十分的简单，接下来就一起来看看如何利用ViewPager来实现轮播图的效果吧。</li>
+</ul>
+</blockquote>
+<hr>
+<h2 id="1-利用ViewPager实现滑动切换效果"><a href="#1-利用ViewPager实现滑动切换效果" class="headerlink" title="1.利用ViewPager实现滑动切换效果"></a>1.利用ViewPager实现滑动切换效果</h2><p>　　主布局中添加控件ViewPager:<br><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">&lt;RelativeLayout</span><br><span class="line">    android:layout_width=<span class="string">"match_parent"</span></span><br><span class="line">    android:layout_height=<span class="string">"300dp"</span></span><br><span class="line">    android:layout_centerInParent=<span class="string">"true"</span></span><br><span class="line">    &gt;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">//ViewPager控件</span></span><br><span class="line">    &lt;android.support.v4.view.ViewPager</span><br><span class="line">        android:id=<span class="string">"@+id/view_pager"</span></span><br><span class="line">        android:layout_width=<span class="string">"match_parent"</span></span><br><span class="line">        android:layout_height=<span class="string">"300dp"</span></span><br><span class="line">        android:layout_centerInParent=<span class="string">"true"</span></span><br><span class="line">        &gt;</span><br><span class="line">    &lt;/android.support.v4.view.ViewPager&gt;</span><br><span class="line">    </span><br><span class="line">&lt;/RelativeLayout&gt;</span><br></pre></td></tr></table></figure></p>
+<p>　　主Activity中为ViewPager设置数据填充，此次为了方便起见，准备了四个Fragment作为图片的数据视图源:<br>　　<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//数据自己添加就行</span></span><br><span class="line"><span class="keyword">private</span> List&lt;Fragment&gt; fragmentList = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line"></span><br><span class="line"> <span class="class"><span class="keyword">class</span> <span class="title">MyAdapter</span> <span class="keyword">extends</span> <span class="title">FragmentPagerAdapter</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">MyAdapter</span><span class="params">(FragmentManager fm)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>(fm);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Fragment <span class="title">getItem</span><span class="params">(<span class="keyword">int</span> position)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> fragmentList.get(position);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">getCount</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> fragmentList.size();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>　　接下来，在Fragment的视图中添加需要轮播的图片，此处为了区分直接用背景色替代了。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">  &lt;LinearLayout xmlns:android=<span class="string">"http://schemas.android.com/apk/res/android"</span></span><br><span class="line">    xmlns:tools=<span class="string">"http://schemas.android.com/tools"</span></span><br><span class="line">    android:layout_width=<span class="string">"match_parent"</span></span><br><span class="line">    android:layout_height=<span class="string">"match_parent"</span></span><br><span class="line">    android:orientation=<span class="string">"vertical"</span></span><br><span class="line">    tools:context=<span class="string">".MainActivity"</span></span><br><span class="line">    android:gravity=<span class="string">"center"</span></span><br><span class="line">    <span class="comment">//设置背景色当作图片</span></span><br><span class="line">    android:background=<span class="string">"@color/red"</span></span><br><span class="line">    &gt;</span><br><span class="line">    &lt;TextView</span><br><span class="line">        android:layout_width=<span class="string">"wrap_content"</span></span><br><span class="line">        android:layout_height=<span class="string">"wrap_content"</span></span><br><span class="line">        android:textSize=<span class="string">"30sp"</span></span><br><span class="line">        android:textColor=<span class="string">"@color/white"</span></span><br><span class="line">        android:layout_gravity=<span class="string">"center"</span></span><br><span class="line">        android:text=<span class="string">"这是第一个Fragment"</span></span><br><span class="line">        /&gt;</span><br><span class="line">  &lt;/LinearLayout&gt;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>　　接着在Activity中，将Adapter赋值给ViewPager，完成第一阶段的实现。</p>
+<pre><code class="java">myAdapter = <span class="keyword">new</span> MyAdapter(getSupportFragmentManager());
+viewPager.setAdapter(myAdapter);
+</code></pre>
+<p>　　效果如下:<br>　　　　<center><img src="https://raw.githubusercontent.com/sqHayden/sqHayden.github.io/master/avatar/scroll_view/fragment_scroll.gif" alt="viewPager"></center>  
+　　　　</p>
+<h2 id="2-ViewPager实现无限循环滑动效果"><a href="#2-ViewPager实现无限循环滑动效果" class="headerlink" title="2.ViewPager实现无限循环滑动效果"></a>2.ViewPager实现无限循环滑动效果</h2><p>　　从上述ViewPager的切换中我们可以看到，向下到达第四张图时，将不可往下继续滑动，而同理，向上滑动到第一张时，也无法继续上滑。而我们要实现的效果便是，当滑动到第四张时，接着可以向下滑动回到第一张，而向上滑动到第一张时，接着上滑回到末尾的第四张。怎么样实现呢？  </p>
+<h3 id="1-思路分析"><a href="#1-思路分析" class="headerlink" title="1.思路分析"></a>1.思路分析</h3><p>　　我们这么来想，此时有四张图片处于我们的总体里，且依次从左到右排列。当我们滑到尾部的时候，如果接着还有一张图续在尾部后面，与第一张图相同，这样当我们接着向右滑动时，就会切回到首页的界面(但此时其实是我们在末尾新加的那张)。与此同时，我们将ViewPager的Item设置为起始位置，这样当我们继续右滑，就可以实现轮播效果。同理，放一张图在最左边的首位，与第四张图相同，切到时替换为第四张图，即可完成整体轮播效果。  </p>
+<h3 id="2-画图分析"><a href="#2-画图分析" class="headerlink" title="2.画图分析"></a>2.画图分析</h3><p>　　<center><img src="https://raw.githubusercontent.com/sqHayden/sqHayden.github.io/master/avatar/scroll_view/viewpager_analyse.png" alt="viewPager"></center>  </p>
+<h3 id="3-代码实现"><a href="#3-代码实现" class="headerlink" title="3.代码实现"></a>3.代码实现</h3><p>　　首先，我们需要定义出六个页面，同样在此处用Fragment实现:  </p>
+<pre><code class="java"><span class="comment">/**</span>
+<span class="comment"> * 数据填充</span>
+<span class="comment"> */</span>
+<span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">initData</span><span class="params">()</span> </span>{
+    <span class="keyword">if</span>(fragmentList==<span class="keyword">null</span>){
+        fragmentList = <span class="keyword">new</span> ArrayList&lt;&gt;();
+    }
+    <span class="comment">//添加第四个</span>
+    fragmentList.add(<span class="keyword">new</span> Fragment4());
+    <span class="comment">//顺序添加</span>
+    fragmentList.add(<span class="keyword">new</span> Fragment1());
+    fragmentList.add(<span class="keyword">new</span> Fragment2());
+    fragmentList.add(<span class="keyword">new</span> Fragment3());
+    fragmentList.add(<span class="keyword">new</span> Fragment4());
+    <span class="comment">//添加第一个</span>
+    fragmentList.add(<span class="keyword">new</span> Fragment1());
+    <span class="comment">//设置起始的变更位置,由于采用先等待后变更模式，而起始就是1位置,所以索引从2开始</span>
+    position = <span class="number">2</span>;
+}
+</code></pre>
+<p>　　接着，我们来看看在ViewPager的监听逻辑实现:  </p>
+<pre><code class="java">viewPager.addOnPageChangeListener(<span class="keyword">new</span> ViewPager.OnPageChangeListener() {
+
+        <span class="comment">//此方法用于监听滑动过程逻辑，不用处理</span>
+        <span class="meta">@Override</span>
+        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onPageScrolled</span><span class="params">(<span class="keyword">int</span> position, <span class="keyword">float</span> positionOffset, <span class="keyword">int</span> positionOffsetPixels)</span> </span>{
+        }
+
+        <span class="comment">//此方法中变更当前页面的位置</span>
+        <span class="meta">@Override</span>
+        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onPageSelected</span><span class="params">(<span class="keyword">int</span> position1)</span> </span>{
+            position = position1;
+            <span class="keyword">if</span> (position == fragmentList.size()-<span class="number">1</span>) {
+                <span class="comment">// 如果滑到了最后一个，即和第一张相同的图时，设置当前值为1</span>
+                position = FIRST_PAGE;
+            } <span class="keyword">else</span> <span class="keyword">if</span> (position == <span class="number">0</span>) {
+                <span class="comment">// 如果索引值为0,即滑到了和第四张图相同的时候，就设置索引值为倒数第二个</span>
+                position = fragmentList.size()-<span class="number">2</span>;
+            } <span class="keyword">else</span> {
+                <span class="comment">//否则正常显示</span>
+                position = position1;
+            }
+        }
+
+        <span class="comment">//此方法用来变更ViewPager显示的Item</span>
+        <span class="meta">@Override</span>
+        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onPageScrollStateChanged</span><span class="params">(<span class="keyword">int</span> state)</span> </span>{
+            <span class="comment">//滑动状态改变的方法</span>
+            <span class="comment">//state :dragging 拖拽 idle 静止 settling 惯性过程</span>
+            <span class="comment">//如果是静止状态,将当前页进行替换</span>
+            <span class="keyword">if</span>(state==ViewPager.SCROLL_STATE_IDLE){
+                <span class="comment">//每次滑动时会走这个方法</span>
+                viewPager.setCurrentItem(position, <span class="keyword">false</span>);
+            }
+        }
+    });
+</code></pre>
+<p>　　分析一波：我们在起始时就设置<code>viewPager.setCurrentItem(1,false)</code>，也就是显示我们的第一张图。然后，当我们向右滑动时，先走<code>onPageSelected</code>，位置未变更，再走<code>onPageScrollStateChanged</code>,此时position整体一致，因此视图保持正常切换。当滑到最后一个时，我们将位置设为1回到第一个图片的位置，再将ViewPager变更到图片1，不过由于末尾图与1图完全相同，因此感官上是看不出来的，就这样我们完成了后台的变更，实现了无限循环的轮播，向前也是一样的逻辑。  </p>
+<h3 id="4-效果演示："><a href="#4-效果演示：" class="headerlink" title="4.效果演示："></a>4.效果演示：</h3><p>　　此时，我们的效果就已经实现了：<br>　　<center><img src="https://raw.githubusercontent.com/sqHayden/sqHayden.github.io/master/avatar/scroll_view/fragment_overScroll.gif" alt="viewPager"></center>  </p>
+<h2 id="3-ViewPager轮播图中添加小圆点并完成联动"><a href="#3-ViewPager轮播图中添加小圆点并完成联动" class="headerlink" title="3.ViewPager轮播图中添加小圆点并完成联动"></a>3.ViewPager轮播图中添加小圆点并完成联动</h2><h3 id="1-实现思路"><a href="#1-实现思路" class="headerlink" title="1.实现思路"></a>1.实现思路</h3><p>　　我们在布局文件中，用一个横向的LinearLayout存储四个自定义Shape小圆点，然后采用相对布局，将ViewPager同LinearLayout放在一个RelativeLayout下，从而实现小圆点的添加动作。<font color="red">（注：由于小圆点的点击范围过小，影响用户操作体验，因此用定宽高的LinearLayout将它包裹起来，完成联动）</font>  </p>
+<h3 id="2-代码实现"><a href="#2-代码实现" class="headerlink" title="2.代码实现"></a>2.代码实现</h3><p>　　主视图的布局代码如下：</p>
+<pre><code class="java"><span class="comment">//定高容器RelativeLayout</span>
+&lt;RelativeLayout
+    android:layout_width=<span class="string">"match_parent"</span>
+    android:layout_height=<span class="string">"300dp"</span>
+    android:layout_centerInParent=<span class="string">"true"</span>
+    &gt;
+    <span class="comment">//轮播图ViewPager</span>
+    &lt;android.support.v4.view.ViewPager
+        android:id=<span class="string">"@+id/view_pager"</span>
+        android:layout_width=<span class="string">"match_parent"</span>
+        android:layout_height=<span class="string">"300dp"</span>
+        android:layout_centerInParent=<span class="string">"true"</span>
+        &gt;
+    &lt;/android.support.v4.view.ViewPager&gt;
+    <span class="comment">//横向小圆点容器</span>
+    &lt;LinearLayout
+        android:id=<span class="string">"@+id/circle_layout"</span>
+        android:layout_width=<span class="string">"match_parent"</span>
+        android:layout_height=<span class="string">"wrap_content"</span>
+        android:orientation=<span class="string">"horizontal"</span>
+        android:layout_alignParentBottom=<span class="string">"true"</span>
+        android:layout_marginBottom=<span class="string">"10dp"</span>
+        android:gravity=<span class="string">"center"</span>
+        &gt;
+        <span class="comment">//依次用定宽高的LinearLayout包裹</span>
+        &lt;LinearLayout
+            android:id=<span class="string">"@+id/pic0_lay"</span>
+            android:layout_width=<span class="string">"30dp"</span>
+            android:layout_height=<span class="string">"30dp"</span>
+            android:gravity=<span class="string">"center"</span>
+            &gt;
+            &lt;ImageView
+                android:id=<span class="string">"@+id/pic_0"</span>
+                android:layout_width=<span class="string">"wrap_content"</span>
+                android:layout_height=<span class="string">"wrap_content"</span>
+                android:background=<span class="string">"@drawable/circle_check_style"</span>
+                /&gt;
+        &lt;/LinearLayout&gt;
+        &lt;LinearLayout
+            android:id=<span class="string">"@+id/pic1_lay"</span>
+            android:layout_width=<span class="string">"30dp"</span>
+            android:layout_height=<span class="string">"30dp"</span>
+            android:gravity=<span class="string">"center"</span>
+            &gt;
+            &lt;ImageView
+                android:id=<span class="string">"@+id/pic_1"</span>
+                android:layout_width=<span class="string">"wrap_content"</span>
+                android:layout_height=<span class="string">"wrap_content"</span>
+                android:background=<span class="string">"@drawable/circle_uncheck_style"</span>
+                /&gt;
+        &lt;/LinearLayout&gt;
+        &lt;LinearLayout
+            android:id=<span class="string">"@+id/pic2_lay"</span>
+            android:layout_width=<span class="string">"30dp"</span>
+            android:layout_height=<span class="string">"30dp"</span>
+            android:gravity=<span class="string">"center"</span>
+            &gt;
+            &lt;ImageView
+                android:id=<span class="string">"@+id/pic_2"</span>
+                android:layout_width=<span class="string">"wrap_content"</span>
+                android:layout_height=<span class="string">"wrap_content"</span>
+                android:background=<span class="string">"@drawable/circle_uncheck_style"</span>
+                /&gt;
+        &lt;/LinearLayout&gt;
+        &lt;LinearLayout
+            android:id=<span class="string">"@+id/pic3_lay"</span>
+            android:layout_width=<span class="string">"30dp"</span>
+            android:layout_height=<span class="string">"30dp"</span>
+            android:gravity=<span class="string">"center"</span>
+            &gt;
+            &lt;ImageView
+                android:id=<span class="string">"@+id/pic_3"</span>
+                android:layout_width=<span class="string">"wrap_content"</span>
+                android:layout_height=<span class="string">"wrap_content"</span>
+                android:background=<span class="string">"@drawable/circle_uncheck_style"</span>
+                /&gt;
+        &lt;/LinearLayout&gt;
+    &lt;/LinearLayout&gt;
+&lt;/RelativeLayout&gt;
+</code></pre>
+<p>　　自定义小圆点的布局：  </p>
+<pre><code class="java">   &lt;shape
+    xmlns:android=<span class="string">"http://schemas.android.com/apk/res/android"</span>
+    android:shape=<span class="string">"oval"</span>
+    android:useLevel=<span class="string">"false"</span>&gt;
+
+    &lt;solid android:color=<span class="string">"@color/green"</span>/&gt;
+    <span class="comment">//未选中设置为黑色的布局即可</span>
+    &lt;solid android:color=<span class="string">"@color/gray"</span>/&gt;
+
+    &lt;size android:width=<span class="string">"15dp"</span>
+        android:height=<span class="string">"15dp"</span>/&gt;
+&lt;/shape&gt;
+</code></pre>
+<p>　　主Activity的逻辑处理：  </p>
+<pre><code class="java"><span class="comment">//翻页时小圆点的联动</span>
+<span class="meta">@Override</span>
+<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onPageSelected</span><span class="params">(<span class="keyword">int</span> position1)</span> </span>{
+    position = position1;
+    <span class="keyword">if</span> (position == fragmentList.size()-<span class="number">1</span>) {
+        <span class="comment">// 设置当前值为1</span>
+        position = FIRST_PAGE;
+    } <span class="keyword">else</span> <span class="keyword">if</span> (position == <span class="number">0</span>) {
+        <span class="comment">// 如果索引值为0了,就设置索引值为倒数第二个</span>
+        position = fragmentList.size()-<span class="number">2</span>;
+    } <span class="keyword">else</span> {
+        position = position1;
+    }
+    <span class="comment">//翻页后需要去改变对应位置的图片</span>
+    <span class="keyword">switch</span> (position){
+        <span class="keyword">case</span> <span class="number">1</span>:
+            pic_0.setBackgroundResource(R.drawable.circle_check_style);
+            pic_1.setBackgroundResource(R.drawable.circle_uncheck_style);
+            pic_2.setBackgroundResource(R.drawable.circle_uncheck_style);
+            pic_3.setBackgroundResource(R.drawable.circle_uncheck_style);
+            <span class="keyword">break</span>;
+        <span class="keyword">case</span> <span class="number">2</span>:
+            pic_1.setBackgroundResource(R.drawable.circle_check_style);
+            pic_0.setBackgroundResource(R.drawable.circle_uncheck_style);
+            pic_2.setBackgroundResource(R.drawable.circle_uncheck_style);
+            pic_3.setBackgroundResource(R.drawable.circle_uncheck_style);
+            <span class="keyword">break</span>;
+        <span class="keyword">case</span> <span class="number">3</span>:
+            pic_2.setBackgroundResource(R.drawable.circle_check_style);
+            pic_0.setBackgroundResource(R.drawable.circle_uncheck_style);
+            pic_1.setBackgroundResource(R.drawable.circle_uncheck_style);
+            pic_3.setBackgroundResource(R.drawable.circle_uncheck_style);
+            <span class="keyword">break</span>;
+        <span class="keyword">case</span> <span class="number">4</span>:
+            pic_3.setBackgroundResource(R.drawable.circle_check_style);
+            pic_0.setBackgroundResource(R.drawable.circle_uncheck_style);
+            pic_1.setBackgroundResource(R.drawable.circle_uncheck_style);
+            pic_2.setBackgroundResource(R.drawable.circle_uncheck_style);
+            <span class="keyword">break</span>;
+        <span class="keyword">default</span>:
+            <span class="keyword">break</span>;
+    }
+}
+<span class="comment">//点击小圆点时切换ViewPager  </span>
+pic_0 = findViewById(R.id.pic_0);
+pic0_lay = findViewById(R.id.pic0_lay);
+pic0_lay.setOnClickListener(<span class="keyword">new</span> View.OnClickListener() {
+    <span class="meta">@Override</span>
+    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onClick</span><span class="params">(View v)</span> </span>{
+        <span class="comment">//此处对第二个参数SmoothScroll设置为false，表示禁止平滑移动效果，否则在4切1时会显示闪屏。</span>
+        viewPager.setCurrentItem(<span class="number">1</span>,<span class="keyword">false</span>);
+    }
+});
+pic_1 = findViewById(R.id.pic_1);
+pic1_lay = findViewById(R.id.pic1_lay);
+pic1_lay.setOnClickListener(<span class="keyword">new</span> View.OnClickListener() {
+    <span class="meta">@Override</span>
+    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onClick</span><span class="params">(View v)</span> </span>{
+        viewPager.setCurrentItem(<span class="number">2</span>,<span class="keyword">false</span>);
+    }
+});
+pic_2 = findViewById(R.id.pic_2);
+pic2_lay = findViewById(R.id.pic2_lay);
+pic2_lay.setOnClickListener(<span class="keyword">new</span> View.OnClickListener() {
+    <span class="meta">@Override</span>
+    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onClick</span><span class="params">(View v)</span> </span>{
+        viewPager.setCurrentItem(<span class="number">3</span>,<span class="keyword">false</span>);
+    }
+});
+pic_3 = findViewById(R.id.pic_3);
+pic3_lay = findViewById(R.id.pic3_lay);
+pic3_lay.setOnClickListener(<span class="keyword">new</span> View.OnClickListener() {
+    <span class="meta">@Override</span>
+    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onClick</span><span class="params">(View v)</span> </span>{
+        viewPager.setCurrentItem(<span class="number">4</span>,<span class="keyword">false</span>);
+    }
+});
+</code></pre>
+<p>　　上述的代码逻辑比较简单，我们定义好主布局，将四个小圆点图片放在ViewPager中，然后在ViewPager的滑动监听中去同步改变小圆点的选中状态，保持与之匹配。而对于小圆点的点击事件来说，每当我们点击时，就切换到对应的ViewPager的Item项即可。</p>
+<h3 id="3-效果演示"><a href="#3-效果演示" class="headerlink" title="3.效果演示"></a>3.效果演示</h3><p>   　<center><img src="https://raw.githubusercontent.com/sqHayden/sqHayden.github.io/master/avatar/scroll_view/circle_click.gif" alt="circle"></center>  </p>
+<h2 id="4-ViewPager无限自动轮播的最终实现"><a href="#4-ViewPager无限自动轮播的最终实现" class="headerlink" title="4.ViewPager无限自动轮播的最终实现"></a>4.ViewPager无限自动轮播的最终实现</h2><p>　　到了这一步，成功已经在向我们招手了，接下来我们就写一个定时器来实现一个自动轮播的效果即可。代码如下:  </p>
+<pre><code class="java"> <span class="comment">//添加一个定时器任务</span>
+    timerTask = <span class="keyword">new</span> TimerTask() {
+        <span class="meta">@Override</span>
+        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>{
+            <span class="keyword">while</span> (flag) {
+                <span class="keyword">try</span> {
+                    Thread.sleep(<span class="number">2000</span>);
+                    <span class="comment">//向主线程每隔2s发送一次消息</span>
+                    Message msg = <span class="keyword">new</span> Message();
+                    msg.what = MSG_ONE;
+                    handler.sendMessage(msg);
+                }<span class="keyword">catch</span> (InterruptedException e){
+                    e.printStackTrace();
+                }
+            }
+        }
+    };
+ <span class="comment">//实现主线程的轮播</span>
+ <span class="keyword">private</span> Handler handler = <span class="keyword">new</span> Handler(){
+    <span class="meta">@Override</span>
+    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">handleMessage</span><span class="params">(Message msg)</span> </span>{
+        <span class="keyword">switch</span> (msg.what){
+            <span class="keyword">case</span> MSG_ONE:
+                <span class="comment">//定时变更子项显示</span>
+                <span class="keyword">if</span>(position&lt;<span class="number">5</span>){
+                    <span class="comment">//变换</span>
+                    viewPager.setCurrentItem(position,<span class="keyword">false</span>);
+                    <span class="comment">//+1操作</span>
+                    position++;
+                }<span class="keyword">else</span>{
+                    position = <span class="number">1</span>;
+                    <span class="comment">//变换</span>
+                    viewPager.setCurrentItem(position,<span class="keyword">false</span>);
+                    position++;
+                }
+                <span class="keyword">break</span>;
+            <span class="keyword">default</span>:
+                <span class="keyword">break</span>;
+        }
+    }
+};
+<span class="comment">//设置为1位置先显示（初始position为2）</span>
+viewPager.setCurrentItem(<span class="number">1</span>);
+<span class="comment">//启动轮播</span>
+timer.schedule(timerTask,<span class="number">0</span>);
+</code></pre>
+<p>　　在这里，我们设置了定时器先等待2s在变更的模式，而首次已经加载了页面1，因此position应该从2开始。<br>　　好了，大功告成，让我们看看最终的实现效果吧：<br>　　　<center><img src="https://raw.githubusercontent.com/sqHayden/sqHayden.github.io/master/avatar/scroll_view/viewpager_final.gif" alt="circle"></center>  </p>
+<p>　　</p>
+
+    </article>
+    <!-- 前后页  -->
+    <ul class="post-paginator">
+        <li class="previous">
+            
+                <div class="prevSlogan">前一篇</div>
+                <a href= "/2018/06/05/tab_pager/" title= Material Design系列实践(二) >
+                    <div class="prevTitle">Material Design系列实践(二)</div>
+                </a>
+            
+        </li>
+        <li class="next">
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+    <div id="lv-container" data-id="city" data-uid= MTAyMC8zNTU4OC8xMjEyNA==>
+        <script type="text/javascript">
+            (function (d, s) {
+                var j, e = d.getElementsByTagName(s)[0];
+                if (typeof LivereTower === 'function') { return; }
+                j = d.createElement(s);
+                j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+                j.async = true;
+
+                e.parentNode.insertBefore(j, e);
+            })(document, 'script');
+        </script>
+        <noscript>为正常使用来必力评论功能请激活JavaScript</noscript>
+    </div>
+
+<!-- City版安装代码已完成 -->
+    
+    
+    <!--PC版-->
+
+    <!--PC版-->
+
+
+    
+    <!-- 评论 -->
+</main>
+
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:1365233121@qq.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/sqhayden" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+            
+                <span class="iconfont-archer wechat" title=wechat>
+                  
+                  <img class="profile-qr" src="/assets/example_qr.jpg" />
+                </span>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+    </div>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- 不蒜子  -->
+    
+    <div class="busuanzi-container">
+        <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span>
+        </span>
+    </div>
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:50vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#ViewPager实现循环轮播图"><span class="toc-number">1.</span> <span class="toc-text">ViewPager实现循环轮播图</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-利用ViewPager实现滑动切换效果"><span class="toc-number">1.1.</span> <span class="toc-text">1.利用ViewPager实现滑动切换效果</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-ViewPager实现无限循环滑动效果"><span class="toc-number">1.2.</span> <span class="toc-text">2.ViewPager实现无限循环滑动效果</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-思路分析"><span class="toc-number">1.2.1.</span> <span class="toc-text">1.思路分析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-画图分析"><span class="toc-number">1.2.2.</span> <span class="toc-text">2.画图分析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-代码实现"><span class="toc-number">1.2.3.</span> <span class="toc-text">3.代码实现</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-效果演示："><span class="toc-number">1.2.4.</span> <span class="toc-text">4.效果演示：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-ViewPager轮播图中添加小圆点并完成联动"><span class="toc-number">1.3.</span> <span class="toc-text">3.ViewPager轮播图中添加小圆点并完成联动</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-实现思路"><span class="toc-number">1.3.1.</span> <span class="toc-text">1.实现思路</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-代码实现"><span class="toc-number">1.3.2.</span> <span class="toc-text">2.代码实现</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-效果演示"><span class="toc-number">1.3.3.</span> <span class="toc-text">3.效果演示</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-ViewPager无限自动轮播的最终实现"><span class="toc-number">1.4.</span> <span class="toc-text">4.ViewPager无限自动轮播的最终实现</span></a></li></ol></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">文章</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">标签</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">类别</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-archive"> Total : 10 </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2018 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/07</span><a class="archive-post-title" href= "/2018/06/07/scroll_view/" >ViewPager无限循环自动轮播图的实现</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/05</span><a class="archive-post-title" href= "/2018/06/05/tab_pager/" >Material Design系列实践(二)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/04</span><a class="archive-post-title" href= "/2018/06/04/drawer_navi/" >Material Design系列实践(一)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/26</span><a class="archive-post-title" href= "/2018/05/26/map-gaode/" >高德地图开发(环境搭建及地图显示)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/17</span><a class="archive-post-title" href= "/2018/05/17/listview/" >ListView控件复用详解</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/16</span><a class="archive-post-title" href= "/2018/05/16/opengl-es/" >OpenGL ES实现3D星空背景旋转立方体</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/16</span><a class="archive-post-title" href= "/2018/05/16/activity/" >Activity生命周期详解</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/12</span><a class="archive-post-title" href= "/2018/03/12/my-first-blog/" >博客启程之路</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/12</span><a class="archive-post-title" href= "/2018/03/12/README/" >[Untitled Post]</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/12</span><a class="archive-post-title" href= "/2018/03/12/hello-world/" >Hello World</a>
+        </li>
+    
+    </div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br/>
+    1、请确保node版本大于6.2<br/>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br/>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br/>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+    </div>
+</div> 
+
+    <script>
+    var siteMeta = {
+        root: '/',
+        author: 'hayden'
+    }
+</script>
+    <!-- busuanzi  -->
+    
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+    
+    </body>
+</html>
+
+
