@@ -350,181 +350,21 @@ height:50vh;
 </ul>
 </blockquote>
 <hr>
-<p>##1.场景复现  </p>
-<h3 id="1-问题描述"><a href="#1-问题描述" class="headerlink" title="1.问题描述:"></a>1.问题描述:</h3><p>　　我们在使用RecyclerView加载子布局文件后，发现无论子视图的布局文件宽高设置为<code>wrap_content</code>还是<code>match_parent</code>,均以<code>wrap_content</code>进行显示，十分奇怪。</p>
+<h2 id="1-场景复现"><a href="#1-场景复现" class="headerlink" title="1.场景复现"></a>1.场景复现</h2><h3 id="1-问题描述"><a href="#1-问题描述" class="headerlink" title="1.问题描述:"></a>1.问题描述:</h3><p>　　我们在使用RecyclerView加载子布局文件后，发现无论子视图的布局文件宽高设置为<code>wrap_content</code>还是<code>match_parent</code>,均以<code>wrap_content</code>进行显示，十分奇怪。</p>
 <h3 id="2-相关代码"><a href="#2-相关代码" class="headerlink" title="2.相关代码"></a>2.相关代码</h3><h4 id="1-主视图布局文件main-xml"><a href="#1-主视图布局文件main-xml" class="headerlink" title="1.主视图布局文件main.xml"></a>1.主视图布局文件main.xml</h4><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">&lt;?xml version=<span class="string">"1.0"</span> encoding=<span class="string">"utf-8"</span>?&gt;</span><br><span class="line">&lt;LinearLayout xmlns:android=<span class="string">"http://schemas.android.com/apk/res/android"</span></span><br><span class="line">    xmlns:tools=<span class="string">"http://schemas.android.com/tools"</span></span><br><span class="line">    android:layout_width=<span class="string">"match_parent"</span></span><br><span class="line">    android:layout_height=<span class="string">"match_parent"</span></span><br><span class="line">    android:orientation=<span class="string">"vertical"</span></span><br><span class="line">    tools:context=<span class="string">".MainActivity"</span>&gt;</span><br><span class="line"></span><br><span class="line">    &lt;android.support.v7.widget.RecyclerView</span><br><span class="line">        android:id=<span class="string">"@+id/recycler"</span></span><br><span class="line">        <span class="comment">//列表组件宽高填充父窗体</span></span><br><span class="line">        android:layout_width=<span class="string">"match_parent"</span></span><br><span class="line">        android:layout_height=<span class="string">"match_parent"</span>&gt;</span><br><span class="line"></span><br><span class="line">    &lt;/android.support.v7.widget.RecyclerView&gt;</span><br><span class="line"></span><br><span class="line">&lt;/LinearLayout&gt;</span><br></pre></td></tr></table></figure>
-<h4 id="2-子项布局文件list-item-xml"><a href="#2-子项布局文件list-item-xml" class="headerlink" title="2.子项布局文件list_item.xml"></a>2.子项布局文件list_item.xml</h4><pre><code class="java">   &lt;LinearLayout xmlns:android=<span class="string">"http://schemas.android.com/apk/res/android"</span>
-    xmlns:tools=<span class="string">"http://schemas.android.com/tools"</span>
-    android:layout_width=<span class="string">"match_parent"</span>
-    android:layout_height=<span class="string">"match_parent"</span>
-    android:orientation=<span class="string">"vertical"</span>
-    android:background=<span class="string">"@color/red"</span>
-    tools:context=<span class="string">".MainActivity"</span>&gt;
-
-    &lt;ImageView
-        android:id=<span class="string">"@+id/image"</span>
-        <span class="comment">//子项图片宽高填充父窗体</span>
-        android:layout_width=<span class="string">"match_parent"</span>
-        android:layout_height=<span class="string">"match_parent"</span>
-        /&gt;
-
-&lt;/LinearLayout&gt;
-</code></pre>
-<h4 id="3-Adapter相关代码"><a href="#3-Adapter相关代码" class="headerlink" title="3.Adapter相关代码"></a>3.Adapter相关代码</h4><pre><code class="java"><span class="meta">@Override</span>
-<span class="keyword">public</span> RecyclerView.<span class="function">ViewHolder <span class="title">onCreateViewHolder</span><span class="params">(ViewGroup parent, <span class="keyword">int</span> viewType)</span> </span>{
-    <span class="comment">//视图加载</span>
-    View view = LayoutInflater.from(mContext).inflate(R.layout.list_item,<span class="keyword">null</span>);
-    <span class="keyword">return</span> <span class="keyword">new</span> MyHolder(view);
-}
-
-<span class="meta">@Override</span>
-<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onBindViewHolder</span><span class="params">(RecyclerView.ViewHolder holderBack, <span class="keyword">int</span> position)</span> </span>{
-    MyHolder holder = (MyHolder) holderBack;
-    <span class="comment">//设置图片</span>
-    holder.imageView.setImageResource(R.mipmap.ic_launcher);
-}
-
-
-<span class="meta">@Override</span>
-<span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">getItemCount</span><span class="params">()</span> </span>{
-    <span class="keyword">return</span> <span class="number">10</span>;
-}
-
-<span class="comment">//定义正常的View</span>
-<span class="keyword">private</span> <span class="class"><span class="keyword">class</span> <span class="title">MyHolder</span> <span class="keyword">extends</span> <span class="title">RecyclerView</span>.<span class="title">ViewHolder</span></span>{
-    ImageView imageView;
-    MyHolder(View itemView) {
-        <span class="keyword">super</span>(itemView);
-        imageView = itemView.findViewById(R.id.image);
-    }
-}
-</code></pre>
+<h4 id="2-子项布局文件list-item-xml"><a href="#2-子项布局文件list-item-xml" class="headerlink" title="2.子项布局文件list_item.xml"></a>2.子项布局文件list_item.xml</h4><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">   &lt;LinearLayout xmlns:android=<span class="string">"http://schemas.android.com/apk/res/android"</span></span><br><span class="line">    xmlns:tools=<span class="string">"http://schemas.android.com/tools"</span></span><br><span class="line">    android:layout_width=<span class="string">"match_parent"</span></span><br><span class="line">    android:layout_height=<span class="string">"match_parent"</span></span><br><span class="line">    android:orientation=<span class="string">"vertical"</span></span><br><span class="line">    android:background=<span class="string">"@color/red"</span></span><br><span class="line">    tools:context=<span class="string">".MainActivity"</span>&gt;</span><br><span class="line"></span><br><span class="line">    &lt;ImageView</span><br><span class="line">        android:id=<span class="string">"@+id/image"</span></span><br><span class="line">        <span class="comment">//子项图片宽高填充父窗体</span></span><br><span class="line">        android:layout_width=<span class="string">"match_parent"</span></span><br><span class="line">        android:layout_height=<span class="string">"match_parent"</span></span><br><span class="line">        /&gt;</span><br><span class="line"></span><br><span class="line">&lt;/LinearLayout&gt;</span><br></pre></td></tr></table></figure>
+<h4 id="3-Adapter相关代码"><a href="#3-Adapter相关代码" class="headerlink" title="3.Adapter相关代码"></a>3.Adapter相关代码</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="keyword">public</span> RecyclerView.<span class="function">ViewHolder <span class="title">onCreateViewHolder</span><span class="params">(ViewGroup parent, <span class="keyword">int</span> viewType)</span> </span>&#123;</span><br><span class="line">    <span class="comment">//视图加载</span></span><br><span class="line">    View view = LayoutInflater.from(mContext).inflate(R.layout.list_item,<span class="keyword">null</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> MyHolder(view);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onBindViewHolder</span><span class="params">(RecyclerView.ViewHolder holderBack, <span class="keyword">int</span> position)</span> </span>&#123;</span><br><span class="line">    MyHolder holder = (MyHolder) holderBack;</span><br><span class="line">    <span class="comment">//设置图片</span></span><br><span class="line">    holder.imageView.setImageResource(R.mipmap.ic_launcher);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">getItemCount</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">10</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//定义正常的View</span></span><br><span class="line"><span class="keyword">private</span> <span class="class"><span class="keyword">class</span> <span class="title">MyHolder</span> <span class="keyword">extends</span> <span class="title">RecyclerView</span>.<span class="title">ViewHolder</span></span>&#123;</span><br><span class="line">    ImageView imageView;</span><br><span class="line">    MyHolder(View itemView) &#123;</span><br><span class="line">        <span class="keyword">super</span>(itemView);</span><br><span class="line">        imageView = itemView.findViewById(R.id.image);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>　　主Activity相关代码就不贴了，因为问题重点不在那里。那按照这种布局来说，我们应当是以每张图片都占据一个屏幕的大小来list出10张图。然而真实情况是这样吗？上图:<br>　　　<center><img src="https://raw.githubusercontent.com/sqHayden/sqHayden.github.io/master/avatar/recycler_bug/pic_bug.png" alt="recyclerBug"></center><br>　　可以看到，很奇怪，居然与我们想象的大相径庭，到底是什么原因引起的呢？让我们一步步来分析。　</p>
-<h2 id="2-原因分析"><a href="#2-原因分析" class="headerlink" title="2.原因分析"></a>2.原因分析</h2><p>　　现在的问题是，子项布局的属性失效了，那自然是与子项视图的加载相关，哪里涉及到了子项布局的加载工作呢？那自然是Adapter中的<code>onCreateViewHolder（）</code>方法了，我们看看当时怎么写的：  </p>
-<pre><code class="java"><span class="meta">@Override</span>
-<span class="keyword">public</span> RecyclerView.<span class="function">ViewHolder <span class="title">onCreateViewHolder</span><span class="params">(ViewGroup parent, <span class="keyword">int</span> viewType)</span> </span>{
-    <span class="comment">//这里进行了子视图的加载工作</span>
-    View view = LayoutInflater.from(mContext).inflate(R.layout.list_item,<span class="keyword">null</span>);
-    <span class="keyword">return</span> <span class="keyword">new</span> MyHolder(view);
-}
-</code></pre>
-<p>　　可以看到，我们通过LayoutInflater布局加载器去加载子项视图，跟进去看源码怎么实现的。  </p>
-<pre><code class="java"><span class="function"><span class="keyword">public</span> View <span class="title">inflate</span><span class="params">(@LayoutRes <span class="keyword">int</span> resource, @Nullable ViewGroup root)</span> </span>{
-    <span class="keyword">return</span> inflate(resource, root, root != <span class="keyword">null</span>);
-}
-</code></pre>
-<p>　　原来无论我们给不给定第三个参数的值，都会去调用三参的方法，在只有两个参数的情况下，第三个参数的值由是否传入<code>parent</code>来决定。继续:  </p>
-<pre><code class="java"><span class="function"><span class="keyword">public</span> View <span class="title">inflate</span><span class="params">(@LayoutRes <span class="keyword">int</span> resource, @Nullable ViewGroup root, <span class="keyword">boolean</span> attachToRoot)</span> </span>{
-    <span class="keyword">final</span> Resources res = getContext().getResources();
-    <span class="keyword">if</span> (DEBUG) {
-        Log.d(TAG, <span class="string">"INFLATING from resource: \""</span> + res.getResourceName(resource) + <span class="string">"\" ("</span>
-                + Integer.toHexString(resource) + <span class="string">")"</span>);
-    }
-
-    <span class="keyword">final</span> XmlResourceParser parser = res.getLayout(resource);
-    <span class="keyword">try</span> {
-        <span class="keyword">return</span> inflate(parser, root, attachToRoot);
-    } <span class="keyword">finally</span> {
-        parser.close();
-    }
-}
-</code></pre>
-<p>　　这里将我们的资源文件Id通过xml解析器转换为了布局文件并进一步去调用，接着往下看:  </p>
-<pre><code class="java"><span class="function"><span class="keyword">public</span> View <span class="title">inflate</span><span class="params">(XmlPullParser parser, @Nullable ViewGroup root, <span class="keyword">boolean</span> attachToRoot)</span> </span>{
-    <span class="comment">//省略无关代码</span>
-    <span class="keyword">final</span> AttributeSet attrs = Xml.asAttributeSet(parser);
-    View result = root;
-    <span class="comment">// Temp is the root view that was found in the xml</span>
-    <span class="keyword">final</span> View temp = createViewFromTag(root, name, inflaterContext, attrs);
-    ViewGroup.LayoutParams params = <span class="keyword">null</span>;
-
-    <span class="comment">//第一种情况</span>
-    <span class="keyword">if</span> (root != <span class="keyword">null</span>) {
-        <span class="keyword">if</span> (DEBUG) {
-            System.out.println(<span class="string">"Creating params from root: "</span> +
-                    root);
-        }
-        <span class="comment">// Create layout params that match root, if supplied</span>
-        params = root.generateLayoutParams(attrs);
-        <span class="keyword">if</span> (!attachToRoot) {
-            <span class="comment">// Set the layout params for temp if we are not</span>
-            <span class="comment">// attaching. (If we are, we use addView, below)</span>
-            temp.setLayoutParams(params);
-        }
-    }
-
-    <span class="comment">// Inflate all children under temp against its context.</span>
-    rInflateChildren(parser, temp, attrs, <span class="keyword">true</span>);
-
-    <span class="comment">//第二种情况</span>
-    <span class="comment">// We are supposed to attach all the views we found (int temp)</span>
-    <span class="comment">// to root. Do that now.</span>
-    <span class="keyword">if</span> (root != <span class="keyword">null</span> &amp;&amp; attachToRoot) {
-        root.addView(temp, params);
-    }
-
-    <span class="comment">//第三种情况  (我们采用的那种)</span>
-    <span class="comment">// Decide whether to return the root that was passed in or the</span>
-    <span class="comment">// top view found in xml.</span>
-    <span class="keyword">if</span> (root == <span class="keyword">null</span> || !attachToRoot) {
-        result = temp;
-    }
-
-    <span class="comment">//省略部分代码</span>
-    <span class="keyword">return</span> result;
-}
-</code></pre>
-<p>　　从上面的代码我们可以看出，通过<code>createViewFromTag</code>创建了我们的根布局<code>temp</code>，然后如果<code>root</code>不为空，分了两种情况，一是我们同意attach到根布局(对应情况二)，那么我们会将所有子视图连同参数都attach到根布局；二是我们不想attach的话(对应情况一)，仅仅只会为我们的根布局设置对应参数。而当我们<code>root==null</code>时，只是返回了创建的temp而<font color="red">并未携带任何参数</font>。好了分析到这里，我们来看看RecyclerView是如何将Item子视图加载进来的。<br>　　我们为RecyclerView设置了LinearLayoutManager去管理相关布局，我们找到<code>LinearLayoutManager</code>中布局相关加载的方法:  </p>
-<pre><code class="java"> <span class="function">View <span class="title">next</span><span class="params">(RecyclerView.Recycler recycler)</span> </span>{
-    <span class="keyword">if</span> (mScrapList != <span class="keyword">null</span>) {
-        <span class="keyword">return</span> nextViewFromScrapList();
-    }
-    <span class="keyword">final</span> View view = recycler.getViewForPosition(mCurrentPosition);
-    mCurrentPosition += mItemDirection;
-    <span class="keyword">return</span> view;
-}
-</code></pre>
-<p>　　可以看到视图加载是进入到了<code>getViewForPosition</code>方法中，跟进去看看:  </p>
-<pre><code class="java"><span class="meta">@Nullable</span>
-<span class="function">ViewHolder <span class="title">tryGetViewHolderForPositionByDeadline</span><span class="params">(<span class="keyword">int</span> position, <span class="keyword">boolean</span> dryRun, <span class="keyword">long</span> deadlineNs)</span> </span>{
-    <span class="comment">//省略前段代码</span>
-
-    <span class="keyword">final</span> ViewGroup.LayoutParams lp = holder.itemView.getLayoutParams();
-    <span class="keyword">final</span> LayoutParams rvLayoutParams;
-    <span class="keyword">if</span> (lp == <span class="keyword">null</span>) {
-        <span class="comment">//注意这个方法</span>
-        rvLayoutParams = (LayoutParams) generateDefaultLayoutParams();
-        holder.itemView.setLayoutParams(rvLayoutParams);
-    } <span class="keyword">else</span> <span class="keyword">if</span> (!checkLayoutParams(lp)) {
-        rvLayoutParams = (LayoutParams) generateLayoutParams(lp);
-        holder.itemView.setLayoutParams(rvLayoutParams);
-    } <span class="keyword">else</span> {
-        rvLayoutParams = (LayoutParams) lp;
-    }
-    rvLayoutParams.mViewHolder = holder;
-    rvLayoutParams.mPendingInvalidate = fromScrapOrHiddenOrCache &amp;&amp; bound;
-    <span class="keyword">return</span> holder;
-}
-</code></pre>
-<p>　　从上面的代码我们可以看到，在加载子项视图的时候，我们去判断了View的参数是否是空的，而通过上面的分析，由于parent为null，我们的视图并未携带任何参数，因此在这里会给我们一个<code>generateDefaultLayoutParams()</code>的参数，我们进去看看这个参数:  </p>
-<pre><code class="java"><span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> LayoutParams <span class="title">generateDefaultLayoutParams</span><span class="params">()</span></span>;
-</code></pre>
-<p>　　发现它是一个接口，那我们就去找它的子类LinearLayoutManager中的实现:  </p>
-<pre><code class="java"> <span class="meta">@Override</span>
-<span class="function"><span class="keyword">public</span> LayoutParams <span class="title">generateDefaultLayoutParams</span><span class="params">()</span> </span>{
-    <span class="keyword">return</span> <span class="keyword">new</span> LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
-            ViewGroup.LayoutParams.WRAP_CONTENT);
-}
-</code></pre>
-<p>　　看到这里，我们终于揪出了问题产生的原因。原来当我们在<code>inflate()</code>方法中去传入parent为null时，系统会默认为我们添加一个包裹内容的父组件，导致我们的视图填充属性失效。要解决这个问题，我们看了源码可知，只需要传入一个非null的父组件就行，那代码就可以这样写:  </p>
-<pre><code class="java"><span class="meta">@Override</span>
-<span class="keyword">public</span> RecyclerView.<span class="function">ViewHolder <span class="title">onCreateViewHolder</span><span class="params">(ViewGroup parent, <span class="keyword">int</span> viewType)</span> </span>{
-    <span class="comment">//在这里我们传入参数中的parent但是仅仅获取参数   </span>
-     View view = LayoutInflater.from(mContext).inflate(R.layout.list_item,parent,<span class="keyword">false</span>);
-    <span class="keyword">return</span> <span class="keyword">new</span> MyHolder(view);
-}
-</code></pre>
-<p>　　让我们来看看现在的的效果怎么样:<br>　　<center><img src="https://raw.githubusercontent.com/sqHayden/sqHayden.github.io/master/avatar/recycler_bug/1.gif" alt="recyclerBug"></center><br>　　可以看到，子布局的参数已经生效了，问题解决。最后，可能有人会觉得，我想将它添加到父布局中去，所以将第三个参数设置为了<code>true</code>，结果发现报错了。如下所示:<br>　　<center><img src="https://raw.githubusercontent.com/sqHayden/sqHayden.github.io/master/avatar/recycler_bug/error.png" alt="recyclerBug"></center><br>　　这是为什么呢？因为我们addView()操作做了两次，这是不允许的，每次只能去加载一个View。那这不是自相矛盾吗？第三个参数的意义在哪里？<br>　　其实，第三个参数是为了我们的自定义布局准备的，我们可以在自定义布局中将我们的item子项通过这种方式直接添加进去，进而完成视图的加载工作，省时省力。<br>　　好了，本篇解析到此结束，接下来可能会对以前的一些重要知识点进行一个梳理工作。————学如逆水行舟，不进则退，技术更是如此。</p>
+<h2 id="2-原因分析"><a href="#2-原因分析" class="headerlink" title="2.原因分析"></a>2.原因分析</h2><p>　　现在的问题是，子项布局的属性失效了，那自然是与子项视图的加载相关，哪里涉及到了子项布局的加载工作呢？那自然是Adapter中的<code>onCreateViewHolder（）</code>方法了，我们看看当时怎么写的：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="keyword">public</span> RecyclerView.<span class="function">ViewHolder <span class="title">onCreateViewHolder</span><span class="params">(ViewGroup parent, <span class="keyword">int</span> viewType)</span> </span>&#123;</span><br><span class="line">    <span class="comment">//这里进行了子视图的加载工作</span></span><br><span class="line">    View view = LayoutInflater.from(mContext).inflate(R.layout.list_item,<span class="keyword">null</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> MyHolder(view);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>　　可以看到，我们通过LayoutInflater布局加载器去加载子项视图，跟进去看源码怎么实现的。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> View <span class="title">inflate</span><span class="params">(@LayoutRes <span class="keyword">int</span> resource, @Nullable ViewGroup root)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> inflate(resource, root, root != <span class="keyword">null</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>　　原来无论我们给不给定第三个参数的值，都会去调用三参的方法，在只有两个参数的情况下，第三个参数的值由是否传入<code>parent</code>来决定。继续:<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> View <span class="title">inflate</span><span class="params">(@LayoutRes <span class="keyword">int</span> resource, @Nullable ViewGroup root, <span class="keyword">boolean</span> attachToRoot)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">final</span> Resources res = getContext().getResources();</span><br><span class="line">    <span class="keyword">if</span> (DEBUG) &#123;</span><br><span class="line">        Log.d(TAG, <span class="string">"INFLATING from resource: \""</span> + res.getResourceName(resource) + <span class="string">"\" ("</span></span><br><span class="line">                + Integer.toHexString(resource) + <span class="string">")"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">final</span> XmlResourceParser parser = res.getLayout(resource);</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> inflate(parser, root, attachToRoot);</span><br><span class="line">    &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">        parser.close();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>　　这里将我们的资源文件Id通过xml解析器转换为了布局文件并进一步去调用，接着往下看:<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> View <span class="title">inflate</span><span class="params">(XmlPullParser parser, @Nullable ViewGroup root, <span class="keyword">boolean</span> attachToRoot)</span> </span>&#123;</span><br><span class="line">    <span class="comment">//省略无关代码</span></span><br><span class="line">    <span class="keyword">final</span> AttributeSet attrs = Xml.asAttributeSet(parser);</span><br><span class="line">    View result = root;</span><br><span class="line">    <span class="comment">// Temp is the root view that was found in the xml</span></span><br><span class="line">    <span class="keyword">final</span> View temp = createViewFromTag(root, name, inflaterContext, attrs);</span><br><span class="line">    ViewGroup.LayoutParams params = <span class="keyword">null</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">//第一种情况</span></span><br><span class="line">    <span class="keyword">if</span> (root != <span class="keyword">null</span>) &#123;</span><br><span class="line">        <span class="keyword">if</span> (DEBUG) &#123;</span><br><span class="line">            System.out.println(<span class="string">"Creating params from root: "</span> +</span><br><span class="line">                    root);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// Create layout params that match root, if supplied</span></span><br><span class="line">        params = root.generateLayoutParams(attrs);</span><br><span class="line">        <span class="keyword">if</span> (!attachToRoot) &#123;</span><br><span class="line">            <span class="comment">// Set the layout params for temp if we are not</span></span><br><span class="line">            <span class="comment">// attaching. (If we are, we use addView, below)</span></span><br><span class="line">            temp.setLayoutParams(params);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// Inflate all children under temp against its context.</span></span><br><span class="line">    rInflateChildren(parser, temp, attrs, <span class="keyword">true</span>);</span><br><span class="line">    </span><br><span class="line">    <span class="comment">//第二种情况</span></span><br><span class="line">    <span class="comment">// We are supposed to attach all the views we found (int temp)</span></span><br><span class="line">    <span class="comment">// to root. Do that now.</span></span><br><span class="line">    <span class="keyword">if</span> (root != <span class="keyword">null</span> &amp;&amp; attachToRoot) &#123;</span><br><span class="line">        root.addView(temp, params);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//第三种情况  (我们采用的那种)</span></span><br><span class="line">    <span class="comment">// Decide whether to return the root that was passed in or the</span></span><br><span class="line">    <span class="comment">// top view found in xml.</span></span><br><span class="line">    <span class="keyword">if</span> (root == <span class="keyword">null</span> || !attachToRoot) &#123;</span><br><span class="line">        result = temp;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">//省略部分代码</span></span><br><span class="line">    <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>　　从上面的代码我们可以看出，通过<code>createViewFromTag</code>创建了我们的根布局<code>temp</code>，然后如果<code>root</code>不为空，分了两种情况，一是我们同意attach到根布局(对应情况二)，那么我们会将所有子视图连同参数都attach到根布局；二是我们不想attach的话(对应情况一)，仅仅只会为我们的根布局设置对应参数。而当我们<code>root==null</code>时，只是返回了创建的temp而<font color="red">并未携带任何参数</font>。好了分析到这里，我们来看看RecyclerView是如何将Item子视图加载进来的。<br>　　我们为RecyclerView设置了LinearLayoutManager去管理相关布局，我们找到<code>LinearLayoutManager</code>中布局相关加载的方法:<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"> <span class="function">View <span class="title">next</span><span class="params">(RecyclerView.Recycler recycler)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (mScrapList != <span class="keyword">null</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> nextViewFromScrapList();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">final</span> View view = recycler.getViewForPosition(mCurrentPosition);</span><br><span class="line">    mCurrentPosition += mItemDirection;</span><br><span class="line">    <span class="keyword">return</span> view;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>　　可以看到视图加载是进入到了<code>getViewForPosition</code>方法中，跟进去看看:<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Nullable</span></span><br><span class="line"><span class="function">ViewHolder <span class="title">tryGetViewHolderForPositionByDeadline</span><span class="params">(<span class="keyword">int</span> position, <span class="keyword">boolean</span> dryRun, <span class="keyword">long</span> deadlineNs)</span> </span>&#123;</span><br><span class="line">    <span class="comment">//省略前段代码</span></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">final</span> ViewGroup.LayoutParams lp = holder.itemView.getLayoutParams();</span><br><span class="line">    <span class="keyword">final</span> LayoutParams rvLayoutParams;</span><br><span class="line">    <span class="keyword">if</span> (lp == <span class="keyword">null</span>) &#123;</span><br><span class="line">        <span class="comment">//注意这个方法</span></span><br><span class="line">        rvLayoutParams = (LayoutParams) generateDefaultLayoutParams();</span><br><span class="line">        holder.itemView.setLayoutParams(rvLayoutParams);</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (!checkLayoutParams(lp)) &#123;</span><br><span class="line">        rvLayoutParams = (LayoutParams) generateLayoutParams(lp);</span><br><span class="line">        holder.itemView.setLayoutParams(rvLayoutParams);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        rvLayoutParams = (LayoutParams) lp;</span><br><span class="line">    &#125;</span><br><span class="line">    rvLayoutParams.mViewHolder = holder;</span><br><span class="line">    rvLayoutParams.mPendingInvalidate = fromScrapOrHiddenOrCache &amp;&amp; bound;</span><br><span class="line">    <span class="keyword">return</span> holder;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>　　从上面的代码我们可以看到，在加载子项视图的时候，我们去判断了View的参数是否是空的，而通过上面的分析，由于parent为null，我们的视图并未携带任何参数，因此在这里会给我们一个<code>generateDefaultLayoutParams()</code>的参数，我们进去看看这个参数:<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> LayoutParams <span class="title">generateDefaultLayoutParams</span><span class="params">()</span></span>;</span><br></pre></td></tr></table></figure></p>
+<p>　　发现它是一个接口，那我们就去找它的子类LinearLayoutManager中的实现:<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"> <span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> LayoutParams <span class="title">generateDefaultLayoutParams</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,</span><br><span class="line">            ViewGroup.LayoutParams.WRAP_CONTENT);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>　　看到这里，我们终于揪出了问题产生的原因。原来当我们在<code>inflate()</code>方法中去传入parent为null时，系统会默认为我们添加一个包裹内容的父组件，导致我们的视图填充属性失效。要解决这个问题，我们看了源码可知，只需要传入一个非null的父组件就行，那代码就可以这样写:<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="keyword">public</span> RecyclerView.<span class="function">ViewHolder <span class="title">onCreateViewHolder</span><span class="params">(ViewGroup parent, <span class="keyword">int</span> viewType)</span> </span>&#123;</span><br><span class="line">    <span class="comment">//在这里我们传入参数中的parent但是仅仅获取参数   </span></span><br><span class="line">     View view = LayoutInflater.from(mContext).inflate(R.layout.list_item,parent,<span class="keyword">false</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> MyHolder(view);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>　　让我们来看看现在的的效果怎么样:<br>　　<center><img src="https://raw.githubusercontent.com/sqHayden/sqHayden.github.io/master/avatar/recycler_bug/1.gif" alt="recyclerBug"></center><br>　　可以看到，子布局的参数已经生效了，问题解决。最后，可能有人会觉得，我想将它添加到父布局中去，所以将第三个参数设置为了<code>true</code>，结果发现报错了。如下所示:<br>　　<center><img src="https://raw.githubusercontent.com/sqHayden/sqHayden.github.io/master/avatar/recycler_bug/error.png" alt="recyclerBug"></center><br>　　这是为什么呢？因为我们addView()操作做了两次，这是不允许的，每次只能去加载一个View。那这不是自相矛盾吗？第三个参数的意义在哪里？<br>　　其实，第三个参数是为了我们的自定义布局准备的，我们可以在自定义布局中将我们的item子项通过这种方式直接添加进去，进而完成视图的加载工作，省时省力。<br>　　好了，本篇解析到此结束，接下来可能会对以前的一些重要知识点进行一个梳理工作。          ————学如逆水行舟，不进则退，技术更是如此。</p>
 
     </article>
     <!-- 前后页  -->
@@ -658,7 +498,7 @@ top:50vh;
         <div class="toc-catalog">
             <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
         </div>
-        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#RecyclerView的Bug复现及源码分析"><span class="toc-number">1.</span> <span class="toc-text">RecyclerView的Bug复现及源码分析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-问题描述"><span class="toc-number">1.0.1.</span> <span class="toc-text">1.问题描述:</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-相关代码"><span class="toc-number">1.0.2.</span> <span class="toc-text">2.相关代码</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-主视图布局文件main-xml"><span class="toc-number">1.0.2.1.</span> <span class="toc-text">1.主视图布局文件main.xml</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-子项布局文件list-item-xml"><span class="toc-number">1.0.2.2.</span> <span class="toc-text">2.子项布局文件list_item.xml</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-Adapter相关代码"><span class="toc-number">1.0.2.3.</span> <span class="toc-text">3.Adapter相关代码</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-原因分析"><span class="toc-number">1.1.</span> <span class="toc-text">2.原因分析</span></a></li></ol></li></ol>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#RecyclerView的Bug复现及源码分析"><span class="toc-number">1.</span> <span class="toc-text">RecyclerView的Bug复现及源码分析</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-场景复现"><span class="toc-number">1.1.</span> <span class="toc-text">1.场景复现</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-问题描述"><span class="toc-number">1.1.1.</span> <span class="toc-text">1.问题描述:</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-相关代码"><span class="toc-number">1.1.2.</span> <span class="toc-text">2.相关代码</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-主视图布局文件main-xml"><span class="toc-number">1.1.2.1.</span> <span class="toc-text">1.主视图布局文件main.xml</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-子项布局文件list-item-xml"><span class="toc-number">1.1.2.2.</span> <span class="toc-text">2.子项布局文件list_item.xml</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-Adapter相关代码"><span class="toc-number">1.1.2.3.</span> <span class="toc-text">3.Adapter相关代码</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-原因分析"><span class="toc-number">1.2.</span> <span class="toc-text">2.原因分析</span></a></li></ol></li></ol>
     </div>
     
     <div class="back-top iconfont-archer">&#xe639;</div>
@@ -671,8 +511,6 @@ top:50vh;
     <div class="sidebar-content sidebar-content-show-archive">
           <div class="sidebar-panel-archives">
     <!-- 在ejs中将archive按照时间排序 -->
-    
-    
     
     
     
