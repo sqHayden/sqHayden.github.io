@@ -9,7 +9,7 @@
 <head>
     <meta http-equiv="content-type" content="text/html; charset=utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" >
-    <title>sq的博客主页</title>
+    <title>RecyclerView子视图加载原理(源码解析) · sq的博客主页</title>
     <style type="text/css">
     @font-face {
         font-family: 'Oswald-Regular';
@@ -265,7 +265,7 @@
                 <a href="/" >sq_Hayden&#39;s blog</a>
             </div>
             <div class="post-title">
-                <a href="#" class="post-name"></a>
+                <a href="#" class="post-name">RecyclerView子视图加载原理(源码解析)</a>
             </div>
     </div>
     
@@ -297,7 +297,7 @@ height:50vh;
         <h1 class="intro-title">
             <!-- 主页  -->
             
-            [Untitled Post]
+            RecyclerView子视图加载原理(源码解析)
             <!-- 404 -->
             
         </h1>
@@ -315,7 +315,7 @@ height:50vh;
             
             <div class="post-intro-meta">
                 <span class="post-intro-calander iconfont-archer">&#xe676;</span>
-                <span class="post-intro-time">2018/03/12</span>
+                <span class="post-intro-time">2018/06/15</span>
                 
                 <span id="busuanzi_container_page_pv" class="busuanzi-pv">
                     <span class="iconfont-archer">&#xe602;</span>
@@ -344,59 +344,187 @@ height:50vh;
         <div class="container container-unloaded">
             <main class="main post-page">
     <article class="article-entry">
-        <h1 id="hexo-theme-archer"><a href="#hexo-theme-archer" class="headerlink" title="hexo-theme-archer"></a>hexo-theme-archer</h1><p><img src="./docs/snap.png" alt="preview"></p>
-<h2 id="在线预览-Online-demo"><a href="#在线预览-Online-demo" class="headerlink" title="在线预览(Online demo)"></a>在线预览(Online demo)</h2><p>🎯 主题预览：<a href="http://firework.studio/archer-demo/" target="_blank" rel="noopener">Demo</a>。</p>
-<h2 id="文档"><a href="#文档" class="headerlink" title="文档"></a>文档</h2><ul>
-<li><a href="./docs/README-en.md">English document</a></li>
-</ul>
+        <h1 id="RecyclerView的Bug复现及源码分析"><a href="#RecyclerView的Bug复现及源码分析" class="headerlink" title="RecyclerView的Bug复现及源码分析"></a><center>RecyclerView的Bug复现及源码分析</center></h1><blockquote>
 <ul>
-<li><a href="./docs/develop-guide-zh.md">二次开发文档</a></li>
+<li>引言：在上一篇网络加载图片的博客中，遇到了一个比较奇怪的问题，特在此进行总结。</li>
 </ul>
-<h2 id="更新"><a href="#更新" class="headerlink" title="更新"></a>更新</h2><ul>
-<li>2017.08.17 - 『添加了置顶显示』</li>
-<li>2017.08.26 - 『添加了二次开发文档，文章页header在下滑时隐藏』</li>
-<li>2017.09.10 - 『添加了about页面』</li>
-<li>2017.09.25 - 『可以直接添加disqus，gitment及畅言了』</li>
-<li>2017.09.30 - 『添加了rss，修复了placeholder的bug，更流畅』</li>
-<li>2017.10.05 - 『添加toc，默认开启，可在配置中关闭』</li>
-<li>2017.10.16 - 『修复移动端bug，增加渐入效果』</li>
-<li>2017.12.17 - 『增加阅读进度条，在post页的顶部』</li>
-<li>2017.12.27 - 『增加<del>百度分享和</del>页面浏览量统计』</li>
-<li>2018.02.04 - 『代码重构，性能优化，样式更新，V1.0.0』</li>
-<li>2018.02.24 - 『支持显示微信和QQ二维码』</li>
-<li>2018.02.28 - 『重写分享功能，分享按钮在头图上』</li>
-<li>2018.03.04 - 『头图的高度可以自定义了，配置 _config 即可』</li>
-<li>2018.03.11 - 『toc可以根据阅读位置自动展开和收缩了』</li>
-</ul>
-<h2 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h2><ul>
-<li>本主题受<a href="https://github.com/litten/hexo-theme-yilia" target="_blank" rel="noopener">yilia</a>主题和<a href="https://github.com/Huxpro/huxpro.github.io" target="_blank" rel="noopener">huxpro</a>主题的启发，结合了前者的sidebar设计及后者的UI设计。通过sidebar能够不跳转到archive页、tag页及<strong>categories页</strong>进行导航。</li>
-<li>兼容性：现代浏览器及IE10+。</li>
-<li>有任何使用上的问题欢迎<a href="https://github.com/fi3ework/hexo-theme-archer/issues" target="_blank" rel="noopener"><strong>发起issue</strong></a>。</li>
-<li>本主题会持续维护及优化，欢迎star 😆。</li>
-</ul>
-<h2 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h2><ol>
-<li>在<strong>Hexo目录</strong>下执行</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install hexo-generator-json-content --save &amp;&amp; git clone https://github.com/fi3ework/hexo-theme-archer.git themes/archer</span><br></pre></td></tr></table></figure>
-<ol>
-<li>修改<strong>Hexo目录</strong>下的 <code>_config.yml</code> 的 <code>theme</code> 字段为 <code>archer</code></li>
-</ol>
-<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">theme:</span> <span class="string">archer</span></span><br></pre></td></tr></table></figure>
-<ol>
-<li>添加sidebar启用支持：</li>
-</ol>
-<p>在<strong>Hexo目录</strong>下的 <code>_config.yml</code> 中添加以下字段（不是archer下的 <code>_config.yml</code>）</p>
-<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">jsonContent:</span></span><br><span class="line"><span class="attr">  meta:</span> <span class="literal">true</span></span><br><span class="line"><span class="attr">  pages:</span> <span class="literal">false</span></span><br><span class="line"><span class="attr">  posts:</span></span><br><span class="line"><span class="attr">    title:</span> <span class="literal">true</span></span><br><span class="line"><span class="attr">    date:</span> <span class="literal">true</span></span><br><span class="line"><span class="attr">    path:</span> <span class="literal">true</span></span><br><span class="line"><span class="attr">    text:</span> <span class="literal">false</span></span><br><span class="line"><span class="attr">    raw:</span> <span class="literal">false</span></span><br><span class="line"><span class="attr">    content:</span> <span class="literal">false</span></span><br><span class="line"><span class="attr">    slug:</span> <span class="literal">false</span></span><br><span class="line"><span class="attr">    updated:</span> <span class="literal">false</span></span><br><span class="line"><span class="attr">    comments:</span> <span class="literal">false</span></span><br><span class="line"><span class="attr">    link:</span> <span class="literal">false</span></span><br><span class="line"><span class="attr">    permalink:</span> <span class="literal">true</span></span><br><span class="line"><span class="attr">    excerpt:</span> <span class="literal">false</span></span><br><span class="line"><span class="attr">    categories:</span> <span class="literal">true</span></span><br><span class="line"><span class="attr">    tags:</span> <span class="literal">true</span></span><br></pre></td></tr></table></figure>
-<h2 id="可选配置"><a href="#可选配置" class="headerlink" title="可选配置"></a>可选配置</h2><ul>
-<li><a href="https://github.com/fi3ework/hexo-theme-archer/wiki/%E5%90%AF%E7%94%A8about%E9%A1%B5" target="_blank" rel="noopener">启用about页</a></li>
-<li><a href="https://github.com/fi3ework/hexo-theme-archer/wiki/%E5%90%AF%E7%94%A8404%E9%A1%B5" target="_blank" rel="noopener">启用404页</a></li>
-<li><a href="https://github.com/fi3ework/hexo-theme-archer/wiki/%E5%90%AF%E7%94%A8rss" target="_blank" rel="noopener">启用rss订阅</a></li>
-<li><a href="https://github.com/fi3ework/hexo-theme-archer/wiki/%E8%87%AA%E5%AE%9A%E4%B9%89%E6%96%87%E7%AB%A0%E9%A1%B5%E5%A4%B4%E5%9B%BE" target="_blank" rel="noopener">自定义单独文章页头图</a></li>
-<li><a href="https://github.com/fi3ework/hexo-theme-archer/wiki/%E6%9B%B4%E6%94%B9%E4%B8%BB%E9%A2%98%E9%A2%9C%E8%89%B2" target="_blank" rel="noopener">自定义主题颜色</a></li>
-<li><a href="http://xxxsss.me/2017/04/22/hexo-pagination/" target="_blank" rel="noopener">置顶文章</a></li>
-</ul>
-<h2 id="主题配置"><a href="#主题配置" class="headerlink" title="主题配置"></a>主题配置</h2><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># ========== 资料栏 ========== #</span></span><br><span class="line"><span class="comment"># 头像路径</span></span><br><span class="line"><span class="attr">avatar:</span></span><br><span class="line"><span class="comment"># 博主名字，不填写该字段则默认采用Hexo配置文件中的author字段</span></span><br><span class="line"><span class="attr">author:</span></span><br><span class="line"><span class="comment"># 博客签名</span></span><br><span class="line"><span class="attr">signature:</span></span><br><span class="line"><span class="comment"># 社交账号</span></span><br><span class="line"><span class="attr">social:</span></span><br><span class="line"><span class="attr">  email:</span></span><br><span class="line"><span class="attr">  github:</span></span><br><span class="line">  <span class="comment"># wechat 和 qq 需要填写二维码图片的路径</span></span><br><span class="line"><span class="attr">  wechat:</span></span><br><span class="line"><span class="attr">  qq:</span></span><br><span class="line"><span class="attr">  weibo:</span></span><br><span class="line"><span class="attr">  zhihu:</span></span><br><span class="line"><span class="attr">  douban:</span></span><br><span class="line"><span class="attr">  facebook:</span></span><br><span class="line"><span class="attr">  twitter:</span></span><br><span class="line"><span class="attr">  instagram:</span></span><br><span class="line"><span class="attr">  stack-overflow:</span></span><br><span class="line"><span class="attr">  v2ex:</span></span><br><span class="line"><span class="attr">  linkedin:</span></span><br><span class="line"><span class="attr">  blog:</span></span><br><span class="line"><span class="attr">  others:</span></span><br><span class="line"><span class="attr">  rss:</span> <span class="string">/atom.xml</span></span><br><span class="line"><span class="comment"># 友链</span></span><br><span class="line"><span class="attr">friends:</span></span><br><span class="line"><span class="attr">  friendA:</span></span><br><span class="line"><span class="attr">  friendB:</span></span><br><span class="line"><span class="attr">  friendC:</span></span><br><span class="line"><span class="comment"># about页面</span></span><br><span class="line"><span class="attr">about:</span></span><br><span class="line">  <span class="comment"># 是否启用about页</span></span><br><span class="line"><span class="attr">  enable:</span> <span class="literal">true</span></span><br><span class="line">  <span class="comment"># about页头图</span></span><br><span class="line"><span class="attr">  image:</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># ========== 站点 ========== #</span></span><br><span class="line"><span class="comment"># 网站的title，每篇文章后面也会加上此字段利于SEO</span></span><br><span class="line"><span class="attr">SEO_title:</span></span><br><span class="line"><span class="comment"># 显示在网站头图上的主标题</span></span><br><span class="line"><span class="attr">main_title:</span> </span><br><span class="line"><span class="comment"># 显示在网站头图上的副标题</span></span><br><span class="line"><span class="attr">subtitle:</span></span><br><span class="line"><span class="comment"># 主页头图</span></span><br><span class="line"><span class="attr">header_image:</span></span><br><span class="line"><span class="comment"># 文章页默认头图</span></span><br><span class="line"><span class="attr">post_header_image:</span></span><br><span class="line"><span class="comment"># 404页头图</span></span><br><span class="line"><span class="attr">_404_image:</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># ========== 评论插件 ========== #</span></span><br><span class="line"><span class="comment"># 目前支持直接添加Livere，Disqus，Gitment，畅言及友言，填写插件对应的字段即可启用。</span></span><br><span class="line"><span class="comment"># 如果想添加其他评论插件，在custom.ejs中添加即可。</span></span><br><span class="line"><span class="attr">comment:</span></span><br><span class="line">  <span class="comment"># Livere 官网：https://livere.com/</span></span><br><span class="line"><span class="attr">  livere_uid:</span></span><br><span class="line">  <span class="comment"># Disqus 官网：https://disqus.com/</span></span><br><span class="line"><span class="attr">  disqus_shortname:</span></span><br><span class="line">  <span class="comment"># 畅言 官网：http://changyan.kuaizhan.com/</span></span><br><span class="line"><span class="attr">  changyan_appid:</span></span><br><span class="line"><span class="attr">  changyan_conf:</span></span><br><span class="line">  <span class="comment"># Gitment 官网：https://github.com/imsun/gitment</span></span><br><span class="line"><span class="attr">  gitment_owner:</span></span><br><span class="line"><span class="attr">  gitment_repo:</span></span><br><span class="line"><span class="attr">  gitment_client_id:</span></span><br><span class="line"><span class="attr">  gitment_client_secret:</span></span><br><span class="line">  <span class="comment"># 友言 官网: http://www.uyan.cc/</span></span><br><span class="line"><span class="attr">  youyan_uid:</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># ========== 统计 ========== #</span></span><br><span class="line"><span class="comment"># 是否开启不蒜子阅读量统计</span></span><br><span class="line"><span class="attr">busuanzi:</span> <span class="literal">true</span></span><br><span class="line"><span class="comment"># 百度统计(填写siteID)</span></span><br><span class="line"><span class="attr">baidu_analytics:</span></span><br><span class="line"><span class="comment"># Google统计(填写siteID)</span></span><br><span class="line"><span class="attr">google_analytics:</span></span><br><span class="line"><span class="comment"># CNZZ统计</span></span><br><span class="line"><span class="attr">CNZZ_analytics:</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># ========== 其他 ========== #</span></span><br><span class="line"><span class="comment"># favicon</span></span><br><span class="line"><span class="attr">favicon:</span></span><br><span class="line"><span class="comment"># 首页的文章摘要字数(默认300，填0则不显示摘要)</span></span><br><span class="line"><span class="attr">truncate_length:</span></span><br><span class="line"><span class="comment"># enable toc</span></span><br><span class="line"><span class="attr">toc:</span> <span class="literal">true</span></span><br><span class="line"><span class="comment"># intro height (默认是屏幕高度的50%, 可以直接输入其他数字)</span></span><br><span class="line"><span class="attr">index_intro_height:</span> <span class="number">50</span></span><br><span class="line"><span class="attr">post_intro_height:</span> <span class="number">50</span></span><br><span class="line"><span class="attr">about_intro_height:</span> <span class="number">50</span></span><br></pre></td></tr></table></figure>
-<h2 id="License"><a href="#License" class="headerlink" title="License"></a>License</h2><p>MIT</p>
+</blockquote>
+<hr>
+<p>##1.场景复现  </p>
+<h3 id="1-问题描述"><a href="#1-问题描述" class="headerlink" title="1.问题描述:"></a>1.问题描述:</h3><p>　　我们在使用RecyclerView加载子布局文件后，发现无论子视图的布局文件宽高设置为<code>wrap_content</code>还是<code>match_parent</code>,均以<code>wrap_content</code>进行显示，十分奇怪。</p>
+<h3 id="2-相关代码"><a href="#2-相关代码" class="headerlink" title="2.相关代码"></a>2.相关代码</h3><h4 id="1-主视图布局文件main-xml"><a href="#1-主视图布局文件main-xml" class="headerlink" title="1.主视图布局文件main.xml"></a>1.主视图布局文件main.xml</h4><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">&lt;?xml version=<span class="string">"1.0"</span> encoding=<span class="string">"utf-8"</span>?&gt;</span><br><span class="line">&lt;LinearLayout xmlns:android=<span class="string">"http://schemas.android.com/apk/res/android"</span></span><br><span class="line">    xmlns:tools=<span class="string">"http://schemas.android.com/tools"</span></span><br><span class="line">    android:layout_width=<span class="string">"match_parent"</span></span><br><span class="line">    android:layout_height=<span class="string">"match_parent"</span></span><br><span class="line">    android:orientation=<span class="string">"vertical"</span></span><br><span class="line">    tools:context=<span class="string">".MainActivity"</span>&gt;</span><br><span class="line"></span><br><span class="line">    &lt;android.support.v7.widget.RecyclerView</span><br><span class="line">        android:id=<span class="string">"@+id/recycler"</span></span><br><span class="line">        <span class="comment">//列表组件宽高填充父窗体</span></span><br><span class="line">        android:layout_width=<span class="string">"match_parent"</span></span><br><span class="line">        android:layout_height=<span class="string">"match_parent"</span>&gt;</span><br><span class="line"></span><br><span class="line">    &lt;/android.support.v7.widget.RecyclerView&gt;</span><br><span class="line"></span><br><span class="line">&lt;/LinearLayout&gt;</span><br></pre></td></tr></table></figure>
+<h4 id="2-子项布局文件list-item-xml"><a href="#2-子项布局文件list-item-xml" class="headerlink" title="2.子项布局文件list_item.xml"></a>2.子项布局文件list_item.xml</h4><pre><code class="java">   &lt;LinearLayout xmlns:android=<span class="string">"http://schemas.android.com/apk/res/android"</span>
+    xmlns:tools=<span class="string">"http://schemas.android.com/tools"</span>
+    android:layout_width=<span class="string">"match_parent"</span>
+    android:layout_height=<span class="string">"match_parent"</span>
+    android:orientation=<span class="string">"vertical"</span>
+    android:background=<span class="string">"@color/red"</span>
+    tools:context=<span class="string">".MainActivity"</span>&gt;
+
+    &lt;ImageView
+        android:id=<span class="string">"@+id/image"</span>
+        <span class="comment">//子项图片宽高填充父窗体</span>
+        android:layout_width=<span class="string">"match_parent"</span>
+        android:layout_height=<span class="string">"match_parent"</span>
+        /&gt;
+
+&lt;/LinearLayout&gt;
+</code></pre>
+<h4 id="3-Adapter相关代码"><a href="#3-Adapter相关代码" class="headerlink" title="3.Adapter相关代码"></a>3.Adapter相关代码</h4><pre><code class="java"><span class="meta">@Override</span>
+<span class="keyword">public</span> RecyclerView.<span class="function">ViewHolder <span class="title">onCreateViewHolder</span><span class="params">(ViewGroup parent, <span class="keyword">int</span> viewType)</span> </span>{
+    <span class="comment">//视图加载</span>
+    View view = LayoutInflater.from(mContext).inflate(R.layout.list_item,<span class="keyword">null</span>);
+    <span class="keyword">return</span> <span class="keyword">new</span> MyHolder(view);
+}
+
+<span class="meta">@Override</span>
+<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onBindViewHolder</span><span class="params">(RecyclerView.ViewHolder holderBack, <span class="keyword">int</span> position)</span> </span>{
+    MyHolder holder = (MyHolder) holderBack;
+    <span class="comment">//设置图片</span>
+    holder.imageView.setImageResource(R.mipmap.ic_launcher);
+}
+
+
+<span class="meta">@Override</span>
+<span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">getItemCount</span><span class="params">()</span> </span>{
+    <span class="keyword">return</span> <span class="number">10</span>;
+}
+
+<span class="comment">//定义正常的View</span>
+<span class="keyword">private</span> <span class="class"><span class="keyword">class</span> <span class="title">MyHolder</span> <span class="keyword">extends</span> <span class="title">RecyclerView</span>.<span class="title">ViewHolder</span></span>{
+    ImageView imageView;
+    MyHolder(View itemView) {
+        <span class="keyword">super</span>(itemView);
+        imageView = itemView.findViewById(R.id.image);
+    }
+}
+</code></pre>
+<p>　　主Activity相关代码就不贴了，因为问题重点不在那里。那按照这种布局来说，我们应当是以每张图片都占据一个屏幕的大小来list出10张图。然而真实情况是这样吗？上图:<br>　　　<center><img src="https://raw.githubusercontent.com/sqHayden/sqHayden.github.io/master/avatar/recycler_bug/pic_bug.png" alt="recyclerBug"></center><br>　　可以看到，很奇怪，居然与我们想象的大相径庭，到底是什么原因引起的呢？让我们一步步来分析。　</p>
+<h2 id="2-原因分析"><a href="#2-原因分析" class="headerlink" title="2.原因分析"></a>2.原因分析</h2><p>　　现在的问题是，子项布局的属性失效了，那自然是与子项视图的加载相关，哪里涉及到了子项布局的加载工作呢？那自然是Adapter中的<code>onCreateViewHolder（）</code>方法了，我们看看当时怎么写的：  </p>
+<pre><code class="java"><span class="meta">@Override</span>
+<span class="keyword">public</span> RecyclerView.<span class="function">ViewHolder <span class="title">onCreateViewHolder</span><span class="params">(ViewGroup parent, <span class="keyword">int</span> viewType)</span> </span>{
+    <span class="comment">//这里进行了子视图的加载工作</span>
+    View view = LayoutInflater.from(mContext).inflate(R.layout.list_item,<span class="keyword">null</span>);
+    <span class="keyword">return</span> <span class="keyword">new</span> MyHolder(view);
+}
+</code></pre>
+<p>　　可以看到，我们通过LayoutInflater布局加载器去加载子项视图，跟进去看源码怎么实现的。  </p>
+<pre><code class="java"><span class="function"><span class="keyword">public</span> View <span class="title">inflate</span><span class="params">(@LayoutRes <span class="keyword">int</span> resource, @Nullable ViewGroup root)</span> </span>{
+    <span class="keyword">return</span> inflate(resource, root, root != <span class="keyword">null</span>);
+}
+</code></pre>
+<p>　　原来无论我们给不给定第三个参数的值，都会去调用三参的方法，在只有两个参数的情况下，第三个参数的值由是否传入<code>parent</code>来决定。继续:  </p>
+<pre><code class="java"><span class="function"><span class="keyword">public</span> View <span class="title">inflate</span><span class="params">(@LayoutRes <span class="keyword">int</span> resource, @Nullable ViewGroup root, <span class="keyword">boolean</span> attachToRoot)</span> </span>{
+    <span class="keyword">final</span> Resources res = getContext().getResources();
+    <span class="keyword">if</span> (DEBUG) {
+        Log.d(TAG, <span class="string">"INFLATING from resource: \""</span> + res.getResourceName(resource) + <span class="string">"\" ("</span>
+                + Integer.toHexString(resource) + <span class="string">")"</span>);
+    }
+
+    <span class="keyword">final</span> XmlResourceParser parser = res.getLayout(resource);
+    <span class="keyword">try</span> {
+        <span class="keyword">return</span> inflate(parser, root, attachToRoot);
+    } <span class="keyword">finally</span> {
+        parser.close();
+    }
+}
+</code></pre>
+<p>　　这里将我们的资源文件Id通过xml解析器转换为了布局文件并进一步去调用，接着往下看:  </p>
+<pre><code class="java"><span class="function"><span class="keyword">public</span> View <span class="title">inflate</span><span class="params">(XmlPullParser parser, @Nullable ViewGroup root, <span class="keyword">boolean</span> attachToRoot)</span> </span>{
+    <span class="comment">//省略无关代码</span>
+    <span class="keyword">final</span> AttributeSet attrs = Xml.asAttributeSet(parser);
+    View result = root;
+    <span class="comment">// Temp is the root view that was found in the xml</span>
+    <span class="keyword">final</span> View temp = createViewFromTag(root, name, inflaterContext, attrs);
+    ViewGroup.LayoutParams params = <span class="keyword">null</span>;
+
+    <span class="comment">//第一种情况</span>
+    <span class="keyword">if</span> (root != <span class="keyword">null</span>) {
+        <span class="keyword">if</span> (DEBUG) {
+            System.out.println(<span class="string">"Creating params from root: "</span> +
+                    root);
+        }
+        <span class="comment">// Create layout params that match root, if supplied</span>
+        params = root.generateLayoutParams(attrs);
+        <span class="keyword">if</span> (!attachToRoot) {
+            <span class="comment">// Set the layout params for temp if we are not</span>
+            <span class="comment">// attaching. (If we are, we use addView, below)</span>
+            temp.setLayoutParams(params);
+        }
+    }
+
+    <span class="comment">// Inflate all children under temp against its context.</span>
+    rInflateChildren(parser, temp, attrs, <span class="keyword">true</span>);
+
+    <span class="comment">//第二种情况</span>
+    <span class="comment">// We are supposed to attach all the views we found (int temp)</span>
+    <span class="comment">// to root. Do that now.</span>
+    <span class="keyword">if</span> (root != <span class="keyword">null</span> &amp;&amp; attachToRoot) {
+        root.addView(temp, params);
+    }
+
+    <span class="comment">//第三种情况  (我们采用的那种)</span>
+    <span class="comment">// Decide whether to return the root that was passed in or the</span>
+    <span class="comment">// top view found in xml.</span>
+    <span class="keyword">if</span> (root == <span class="keyword">null</span> || !attachToRoot) {
+        result = temp;
+    }
+
+    <span class="comment">//省略部分代码</span>
+    <span class="keyword">return</span> result;
+}
+</code></pre>
+<p>　　从上面的代码我们可以看出，通过<code>createViewFromTag</code>创建了我们的根布局<code>temp</code>，然后如果<code>root</code>不为空，分了两种情况，一是我们同意attach到根布局(对应情况二)，那么我们会将所有子视图连同参数都attach到根布局；二是我们不想attach的话(对应情况一)，仅仅只会为我们的根布局设置对应参数。而当我们<code>root==null</code>时，只是返回了创建的temp而<font color="red">并未携带任何参数</font>。好了分析到这里，我们来看看RecyclerView是如何将Item子视图加载进来的。<br>　　我们为RecyclerView设置了LinearLayoutManager去管理相关布局，我们找到<code>LinearLayoutManager</code>中布局相关加载的方法:  </p>
+<pre><code class="java"> <span class="function">View <span class="title">next</span><span class="params">(RecyclerView.Recycler recycler)</span> </span>{
+    <span class="keyword">if</span> (mScrapList != <span class="keyword">null</span>) {
+        <span class="keyword">return</span> nextViewFromScrapList();
+    }
+    <span class="keyword">final</span> View view = recycler.getViewForPosition(mCurrentPosition);
+    mCurrentPosition += mItemDirection;
+    <span class="keyword">return</span> view;
+}
+</code></pre>
+<p>　　可以看到视图加载是进入到了<code>getViewForPosition</code>方法中，跟进去看看:  </p>
+<pre><code class="java"><span class="meta">@Nullable</span>
+<span class="function">ViewHolder <span class="title">tryGetViewHolderForPositionByDeadline</span><span class="params">(<span class="keyword">int</span> position, <span class="keyword">boolean</span> dryRun, <span class="keyword">long</span> deadlineNs)</span> </span>{
+    <span class="comment">//省略前段代码</span>
+
+    <span class="keyword">final</span> ViewGroup.LayoutParams lp = holder.itemView.getLayoutParams();
+    <span class="keyword">final</span> LayoutParams rvLayoutParams;
+    <span class="keyword">if</span> (lp == <span class="keyword">null</span>) {
+        <span class="comment">//注意这个方法</span>
+        rvLayoutParams = (LayoutParams) generateDefaultLayoutParams();
+        holder.itemView.setLayoutParams(rvLayoutParams);
+    } <span class="keyword">else</span> <span class="keyword">if</span> (!checkLayoutParams(lp)) {
+        rvLayoutParams = (LayoutParams) generateLayoutParams(lp);
+        holder.itemView.setLayoutParams(rvLayoutParams);
+    } <span class="keyword">else</span> {
+        rvLayoutParams = (LayoutParams) lp;
+    }
+    rvLayoutParams.mViewHolder = holder;
+    rvLayoutParams.mPendingInvalidate = fromScrapOrHiddenOrCache &amp;&amp; bound;
+    <span class="keyword">return</span> holder;
+}
+</code></pre>
+<p>　　从上面的代码我们可以看到，在加载子项视图的时候，我们去判断了View的参数是否是空的，而通过上面的分析，由于parent为null，我们的视图并未携带任何参数，因此在这里会给我们一个<code>generateDefaultLayoutParams()</code>的参数，我们进去看看这个参数:  </p>
+<pre><code class="java"><span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> LayoutParams <span class="title">generateDefaultLayoutParams</span><span class="params">()</span></span>;
+</code></pre>
+<p>　　发现它是一个接口，那我们就去找它的子类LinearLayoutManager中的实现:  </p>
+<pre><code class="java"> <span class="meta">@Override</span>
+<span class="function"><span class="keyword">public</span> LayoutParams <span class="title">generateDefaultLayoutParams</span><span class="params">()</span> </span>{
+    <span class="keyword">return</span> <span class="keyword">new</span> LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT);
+}
+</code></pre>
+<p>　　看到这里，我们终于揪出了问题产生的原因。原来当我们在<code>inflate()</code>方法中去传入parent为null时，系统会默认为我们添加一个包裹内容的父组件，导致我们的视图填充属性失效。要解决这个问题，我们看了源码可知，只需要传入一个非null的父组件就行，那代码就可以这样写:  </p>
+<pre><code class="java"><span class="meta">@Override</span>
+<span class="keyword">public</span> RecyclerView.<span class="function">ViewHolder <span class="title">onCreateViewHolder</span><span class="params">(ViewGroup parent, <span class="keyword">int</span> viewType)</span> </span>{
+    <span class="comment">//在这里我们传入参数中的parent但是仅仅获取参数   </span>
+     View view = LayoutInflater.from(mContext).inflate(R.layout.list_item,parent,<span class="keyword">false</span>);
+    <span class="keyword">return</span> <span class="keyword">new</span> MyHolder(view);
+}
+</code></pre>
+<p>　　让我们来看看现在的的效果怎么样:<br>　　<center><img src="https://raw.githubusercontent.com/sqHayden/sqHayden.github.io/master/avatar/recycler_bug/1.gif" alt="recyclerBug"></center><br>　　可以看到，子布局的参数已经生效了，问题解决。最后，可能有人会觉得，我想将它添加到父布局中去，所以将第三个参数设置为了<code>true</code>，结果发现报错了。如下所示:<br>　　<center><img src="https://raw.githubusercontent.com/sqHayden/sqHayden.github.io/master/avatar/recycler_bug/error.png" alt="recyclerBug"></center><br>　　这是为什么呢？因为我们addView()操作做了两次，这是不允许的，每次只能去加载一个View。那这不是自相矛盾吗？第三个参数的意义在哪里？<br>　　其实，第三个参数是为了我们的自定义布局准备的，我们可以在自定义布局中将我们的item子项通过这种方式直接添加进去，进而完成视图的加载工作，省时省力。<br>　　好了，本篇解析到此结束，接下来可能会对以前的一些重要知识点进行一个梳理工作。————学如逆水行舟，不进则退，技术更是如此。</p>
 
     </article>
     <!-- 前后页  -->
@@ -404,17 +532,12 @@ height:50vh;
         <li class="previous">
             
                 <div class="prevSlogan">前一篇</div>
-                <a href= "/2018/03/12/my-first-blog/" title= 博客启程之路 >
-                    <div class="prevTitle">博客启程之路</div>
+                <a href= "/2018/06/14/okhttp_picasso/" title= Picasso+OkHttp动态加载网络图片 >
+                    <div class="prevTitle">Picasso+OkHttp动态加载网络图片</div>
                 </a>
             
         </li>
         <li class="next">
-            
-                <div class="nextSlogan">后一篇</div>
-                <a href= "/2018/05/16/activity/" title= Activity生命周期详解 >
-                    <div class="nextTitle">Activity生命周期详解</div>
-                </a>
             
         </li>
     </ul>
@@ -535,7 +658,7 @@ top:50vh;
         <div class="toc-catalog">
             <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
         </div>
-        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#hexo-theme-archer"><span class="toc-number">1.</span> <span class="toc-text">hexo-theme-archer</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#在线预览-Online-demo"><span class="toc-number">1.1.</span> <span class="toc-text">在线预览(Online demo)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#文档"><span class="toc-number">1.2.</span> <span class="toc-text">文档</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#更新"><span class="toc-number">1.3.</span> <span class="toc-text">更新</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#说明"><span class="toc-number">1.4.</span> <span class="toc-text">说明</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#安装"><span class="toc-number">1.5.</span> <span class="toc-text">安装</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#可选配置"><span class="toc-number">1.6.</span> <span class="toc-text">可选配置</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#主题配置"><span class="toc-number">1.7.</span> <span class="toc-text">主题配置</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#License"><span class="toc-number">1.8.</span> <span class="toc-text">License</span></a></li></ol></li></ol>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#RecyclerView的Bug复现及源码分析"><span class="toc-number">1.</span> <span class="toc-text">RecyclerView的Bug复现及源码分析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-问题描述"><span class="toc-number">1.0.1.</span> <span class="toc-text">1.问题描述:</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-相关代码"><span class="toc-number">1.0.2.</span> <span class="toc-text">2.相关代码</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-主视图布局文件main-xml"><span class="toc-number">1.0.2.1.</span> <span class="toc-text">1.主视图布局文件main.xml</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-子项布局文件list-item-xml"><span class="toc-number">1.0.2.2.</span> <span class="toc-text">2.子项布局文件list_item.xml</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-Adapter相关代码"><span class="toc-number">1.0.2.3.</span> <span class="toc-text">3.Adapter相关代码</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-原因分析"><span class="toc-number">1.1.</span> <span class="toc-text">2.原因分析</span></a></li></ol></li></ol>
     </div>
     
     <div class="back-top iconfont-archer">&#xe639;</div>
