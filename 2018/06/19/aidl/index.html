@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html>
+    <!-- title -->
+
+
+
+
+
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" >
+    <title>进程间通信之AIDL的实现 · sq的博客主页</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+        box-shadow: 0 0 3px 0 rgba(0, 0, 0, 0.7);
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s 1;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href= /css/style.css?v=20180311 as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="stylesheet" type="text/css" href= /css/mobile.css?v=20180311 media="(max-width: 980px)"/>
+    <link rel="icon" href= /assets/catgirl.ico>
+    <script>
+  // load webfont-loader async, and add callback function
+  function async(u, c) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+  
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntroTags = document.getElementsByClassName('post-intro-tags')[0],
+        postIntroMeat = document.getElementsByClassName('post-intro-meta')[0];
+      if (postIntroTags) {
+        postIntroTags.classList.add('post-fade-in');
+      }
+      if (postIntroMeat) {
+        postIntroMeat.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  async("https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", asyncCb)
+</script>
+    <script>
+        (function (w) {
+            "use strict";
+            // rel=preload support test
+            if (!w.loadCSS) {
+                w.loadCSS = function () { };
+            }
+            // define on the loadCSS obj
+            var rp = loadCSS.relpreload = {};
+            // rel=preload feature support test
+            // runs once and returns a function for compat purposes
+            rp.support = (function () {
+                var ret;
+                try {
+                    ret = w.document.createElement("link").relList.supports("preload");
+                } catch (e) {
+                    ret = false;
+                }
+                return function () {
+                    return ret;
+                };
+            })();
+
+            // if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+            // then change that media back to its intended value on load
+            rp.bindMediaToggle = function (link) {
+                // remember existing media attr for ultimate state, or default to 'all'
+                var finalMedia = link.media || "all";
+
+                function enableStylesheet() {
+                    link.media = finalMedia;
+                }
+
+                // bind load handlers to enable media
+                if (link.addEventListener) {
+                    link.addEventListener("load", enableStylesheet);
+                } else if (link.attachEvent) {
+                    link.attachEvent("onload", enableStylesheet);
+                }
+
+                // Set rel and non-applicable media type to start an async request
+                // note: timeout allows this to happen async to let rendering continue in IE
+                setTimeout(function () {
+                    link.rel = "stylesheet";
+                    link.media = "only x";
+                });
+                // also enable media after 3 seconds,
+                // which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+                setTimeout(enableStylesheet, 3000);
+            };
+
+            // loop through link elements in DOM
+            rp.poly = function () {
+                // double check this to prevent external calls from running
+                if (rp.support()) {
+                    return;
+                }
+                var links = w.document.getElementsByTagName("link");
+                for (var i = 0; i < links.length; i++) {
+                    var link = links[i];
+                    // qualify links to those with rel=preload and as=style attrs
+                    if (link.rel === "preload" && link.getAttribute("as") === "style" && !link.getAttribute("data-loadcss")) {
+                        // prevent rerunning on link
+                        link.setAttribute("data-loadcss", true);
+                        // bind listeners to toggle media back
+                        rp.bindMediaToggle(link);
+                    }
+                }
+            };
+
+            // if unsupported, run the polyfill
+            if (!rp.support()) {
+                // run once at least
+                rp.poly();
+
+                // rerun poly on an interval until onload
+                var run = w.setInterval(rp.poly, 500);
+                if (w.addEventListener) {
+                    w.addEventListener("load", function () {
+                        rp.poly();
+                        w.clearInterval(run);
+                    });
+                } else if (w.attachEvent) {
+                    w.attachEvent("onload", function () {
+                        rp.poly();
+                        w.clearInterval(run);
+                    });
+                }
+            }
+            // commonjs
+            if (typeof exports !== "undefined") {
+                exports.loadCSS = loadCSS;
+            }
+            else {
+                w.loadCSS = loadCSS;
+            }
+        }(typeof global !== "undefined" ? global : this));
+    </script>
+    <script src="//cdn.staticfile.org/jquery/3.2.1/jquery.min.js" defer></script>
+    <script src="/scripts/main.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+</head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >sq_Hayden&#39;s blog</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">进程间通信之AIDL的实现</a>
+            </div>
+    </div>
+    
+    <a class="home-link" href=/>sq_Hayden's blog</a>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style=
+
+
+
+
+
+
+
+
+height:50vh;
+
+>
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            进程间通信之AIDL的实现
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <!-- 文章页标签  -->
+            
+            <div class="post-intro-meta">
+                <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                <span class="post-intro-time">2018/06/19</span>
+                
+                <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                    <span class="iconfont-archer">&#xe602;</span>
+                    <span id="busuanzi_value_page_pv"></span>
+                </span>
+                
+                <span class="shareWrapper">
+                    <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                    <span class="shareText">Share</span>
+                    <ul class="shareList">
+                        <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                            <div class="share-qrcode"></div>
+                        </li>
+                        <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                        <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                        <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                        <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                    </ul>
+                </span>
+            </div>
+        
+    </div>
+</div>
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <h1 id="AIDL实现不同进程间的通信"><a href="#AIDL实现不同进程间的通信" class="headerlink" title="AIDL实现不同进程间的通信"></a><center>AIDL实现不同进程间的通信</center></h1><blockquote>
+<ul>
+<li>引言：在互联网经济时代，支付宝可谓是普及到了大街小巷，现在出门只要装个支付宝，就可以各种Shopping了。那么，就某个游戏应用来说，当我们需要用支付宝充值时，会发现程序自动去调用了支付宝提供的相关服务。如何做到呢？就要靠进程间通信来发挥作用了。Google工程师考虑到了这方面需求，为我们提供了专门的实现方法，接下来就去看看如何利用AIDL实现进程间的通信。</li>
+</ul>
+</blockquote>
+<hr>
+<h2 id="1-AIDL介绍"><a href="#1-AIDL介绍" class="headerlink" title="1. AIDL介绍"></a>1. AIDL介绍</h2><p>　　我们知道，Android中的每一个应用，都由自己的dvm进行单独管理。也就是说，Android系统中的进程之间不能共享内存，因此，需要提供一些机制在不同进程之间进行数据通信。<br>　　为了使其他的应用程序也可以访问本应用程序提供的服务，Android使用了一种接口定义语言，即AIDL（Android Interface Definition Language，AIDL）来公开服务的接口，从而达成进程间通信的目的。<br>　　接下来，就让我们通过一个小例子，来完成AIDL的相关功能。  </p>
+<h2 id="2-AIDL适用场景"><a href="#2-AIDL适用场景" class="headerlink" title="2. AIDL适用场景"></a>2. AIDL适用场景</h2><h3 id="2-1-场景分析"><a href="#2-1-场景分析" class="headerlink" title="2.1 场景分析"></a>2.1 场景分析</h3><p>　　假设有这么一个场景：我们的两个进程(<font color="red">此处假设为服务端进程及客户端进程</font>)都需要针对某个类(<font color="red">假设有一个User类</font>)进行修改，而且还会相互影响，如何保证在一个进程修改的基础之上进行相关操作？</p>
+<h3 id="2-2-实现思路"><a href="#2-2-实现思路" class="headerlink" title="2.2 实现思路"></a>2.2 实现思路</h3><p>　　针对这个问题，首先，对于客户端进程来说，我们需要用到服务端应用的相关数据，可以考虑通过广播的方式来传递，不过这种方式过于冗杂，对系统资源的消耗比较多。那么，我们就采用AIDL的高效方式来完成这两个不同进程间的数据通信工作。<br>　　怎么样才能实现一个完整的AIDL相关传输呢？主要有以下的几个步骤：<br>　　【1】  包结构的搭建；<br>　　【2】  创建要传输的实例化对象；<br>　　【3】  创建AIDL相关文件；<br>　　【4】  在服务端进程创建服务，并对外提供相应接口；<br>　　【5】  在客户端绑定服务，获取服务接口对象并调用方法。<br>　　好了，思路就介绍到这里，接下来就进入到具体的开发中。  </p>
+<h2 id="3-AIDL实现进程间通信"><a href="#3-AIDL实现进程间通信" class="headerlink" title="3. AIDL实现进程间通信"></a>3. AIDL实现进程间通信</h2><h3 id="3-1-服务端进程相关"><a href="#3-1-服务端进程相关" class="headerlink" title="3.1 服务端进程相关"></a>3.1 服务端进程相关</h3><h4 id="3-1-1-包结构搭建"><a href="#3-1-1-包结构搭建" class="headerlink" title="3.1.1 包结构搭建"></a>3.1.1 包结构搭建</h4><p>　　包结构如下图所示:<br>　　　<center><img src="https://raw.githubusercontent.com/sqHayden/sqHayden.github.io/master/avatar/aidl/aidl_struct.png" alt="AIDL"></center><br>　　首先，我们需要建立一个与<code>java</code>同级的文件夹<code>aidl</code>(可将<code>java</code>文件夹Copy过来改名字)，接着在我们的<code>bean</code>目录下对应建立我们将要传递的对象，并建立对象所对应的<code>.aidl</code>文件，最后我们需要在<code>aidl</code>的包下建立我们服务接口对应的<code>.aidl</code>文件。这样，我们的AIDL结构就搭建完成了。下面进行详细说明：</p>
+<h4 id="3-1-2-对象创建"><a href="#3-1-2-对象创建" class="headerlink" title="3.1.2 对象创建"></a>3.1.2 对象创建</h4><p>　　由于我们需要传递的是一个对象，并不是一个基本的数据类型，因此必须进行序列化，这里建议采用<code>Parcelable</code>完成相关的序列化操作，这是android比较高效的序列化方法。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> com.idx.aidl.bean;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> android.os.Parcel;</span><br><span class="line"><span class="keyword">import</span> android.os.Parcelable;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Created by hayden on 18-6-19.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">User</span> <span class="keyword">implements</span> <span class="title">Parcelable</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> String account;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> password;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">User</span><span class="params">(String account, <span class="keyword">int</span> password)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.account = account;</span><br><span class="line">        <span class="keyword">this</span>.password = password;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="title">User</span><span class="params">(Parcel in)</span> </span>&#123;</span><br><span class="line">        account = in.readString();</span><br><span class="line">        password = in.readInt();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> Creator&lt;User&gt; CREATOR = <span class="keyword">new</span> Creator&lt;User&gt;() &#123;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> User <span class="title">createFromParcel</span><span class="params">(Parcel in)</span> </span>&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> User(in);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="keyword">public</span> User[] newArray(<span class="keyword">int</span> size) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> User[size];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">describeContents</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">writeToParcel</span><span class="params">(Parcel dest, <span class="keyword">int</span> flags)</span> </span>&#123;</span><br><span class="line">        dest.writeString(account);</span><br><span class="line">        dest.writeInt(password);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">toString</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">"User&#123;"</span> +</span><br><span class="line">                <span class="string">"account='"</span> + account + <span class="string">'\''</span> +</span><br><span class="line">                <span class="string">", password="</span> + password +</span><br><span class="line">                <span class="string">'&#125;'</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h4 id="3-1-3-aidl文件的创建"><a href="#3-1-3-aidl文件的创建" class="headerlink" title="3.1.3 aidl文件的创建"></a>3.1.3 aidl文件的创建</h4><p>　　首先是User.aidl：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// User.aidl</span></span><br><span class="line"><span class="keyword">package</span> com.idx.aidl.bean;</span><br><span class="line"></span><br><span class="line"><span class="comment">//要和我们定义的User类在同一个包(bean)里</span></span><br><span class="line">parcelable User;</span><br></pre></td></tr></table></figure></p>
+<p>　　接着是我们服务对外提供方法接口的.aidl文件：<font color="red">这里需要注意，我们必须手动将User的全路径<code>import</code>进来，否则系统无法找到此对象</font>。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">    <span class="comment">// IMyAidlInterface.aidl</span></span><br><span class="line">    <span class="keyword">package</span> com.idx.aidl;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">import</span> com.idx.aidl.bean.User;</span><br><span class="line">    <span class="comment">// Declare any non-default types here with import statements</span></span><br><span class="line"></span><br><span class="line">    <span class="class"><span class="keyword">interface</span> <span class="title">IService</span> </span>&#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Demonstrates some basic types that you can use as parameters</span></span><br><span class="line"><span class="comment">     * and return values in AIDL.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">addUser</span><span class="params">(in User user)</span></span>;</span><br><span class="line">    <span class="function">User <span class="title">getUser</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>　　在上述服务接口的搭建中，我们定义了<code>addUser(in User user)</code>方法，可以看到，相对我们以前的写法多了一个<code>in</code>，需要说明的是，<font color="red">这个参数是不能省略的，不然系统会报错。</font>它代表了我们将通过此方法写入<code>User</code>对象。<br>　　到了这里，我们关于AIDL的搭建工作就完成了，接下来将我们的项目<code>Build -- ReBuild Project</code>，我们就会发现系统自动为我们生成了AIDL的底层代码。如何查看它呢？在我们app的build目录下<br>　　　<center><img src="https://raw.githubusercontent.com/sqHayden/sqHayden.github.io/master/avatar/aidl/aidl_struct1.png" alt="AIDL"></center><br>　　如果我们点进去查看的话，会发现系统为我们生成了一个抽象类<code>Stub</code>，它继承了Binder并实现了我们定义的接口，那么后面我们在调用IService相关功能的时候，只需要去拿到它的实例化对象就行了。接下来，就进入到我们的服务代码中。  </p>
+<h4 id="3-1-4-服务的创建"><a href="#3-1-4-服务的创建" class="headerlink" title="3.1.4 服务的创建"></a>3.1.4 服务的创建</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//保存传递过来的对象</span></span><br><span class="line"><span class="keyword">private</span> User user;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> IBinder <span class="title">onBind</span><span class="params">(Intent intent)</span> </span>&#123;</span><br><span class="line">    <span class="comment">//这里返回我们的实体对象</span></span><br><span class="line">    <span class="keyword">return</span> iService;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">super</span>.onCreate();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//用于对外返回设置进来的User</span></span><br><span class="line"><span class="function"><span class="keyword">private</span> User <span class="title">getServiceUser</span><span class="params">()</span></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> user;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//这就是我们的服务接口实体类了</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> IService.Stub iService = <span class="keyword">new</span> IService.Stub() &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">addUser</span><span class="params">(User userData)</span> <span class="keyword">throws</span> RemoteException </span>&#123;</span><br><span class="line">        <span class="comment">//保存别人添加的对象</span></span><br><span class="line">        user = userData;</span><br><span class="line">        <span class="comment">//弹个提示</span></span><br><span class="line">        Toast.makeText(getApplicationContext(),<span class="string">"添加成功"</span>,Toast.LENGTH_SHORT).show();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> User <span class="title">getUser</span><span class="params">()</span> <span class="keyword">throws</span> RemoteException </span>&#123;</span><br><span class="line">        Log.i(TAG, <span class="string">"getUser: 这里走了"</span>);</span><br><span class="line">        <span class="comment">//获取添加的对象</span></span><br><span class="line">        <span class="keyword">return</span> getServiceUser();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>　　服务端的代码并不难，我们通过<code>IService.Stub</code>来获取到了我们对外接口的实体对象，通过它我们就可以建立其进程间的通信，因为它就是数据联系的纽带。<br>　　到了这里，我们还需要做两件事：<br>　　一、我们的服务虽然在服务端创建了，但是需要为它设置对应的action，这样我们才能在客户端进程中去开启对应的这个服务；<br>　　<code>AndroidManifest.xml</code>中服务相关配置：  　　<br><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&lt;service android:name=<span class="string">".MyService"</span>&gt;</span><br><span class="line">    &lt;intent-filter&gt;</span><br><span class="line">        <span class="comment">//在这里要为我们的服务配置一个自定义action</span></span><br><span class="line">        &lt;action android:name=<span class="string">"com.idx.demo.service"</span>/&gt;</span><br><span class="line">    &lt;/intent-filter&gt;</span><br><span class="line">&lt;/service&gt;</span><br></pre></td></tr></table></figure></p>
+<p>　　二、由于我们的<code>aidl</code>文件夹处于和<code>java</code>文件夹同级的层次，因此要去我们模块的<code>build.gradle</code>下进行相关配置，从而可以保证系统能够找到我们对应的实体类<code>User</code>。<br>　　<code>build.gradle</code>相关配置：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">sourceSets &#123;</span><br><span class="line">    main &#123;</span><br><span class="line">        java.srcDirs = [<span class="string">'src/main/java'</span>, <span class="string">'src/main/aidl'</span>]</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>　　到了这里，服务端进程的工作就做完了，我们在Activity中调用服务接口传递一个对象，看看能否获取到此对象，从而实现进程内服务的调用:<br>   <center><img src="https://raw.githubusercontent.com/sqHayden/sqHayden.github.io/master/avatar/aidl/aidl_self.gif" alt="AIDL"></center><br>　　可以看到，我们在Activity中获取到这个<code>IService</code>对象后，确实可以通过它来操作服务中的相关数据。那么接下来，就进入到客户端的相关开发中。  </p>
+<h3 id="3-2-客户端进程相关"><a href="#3-2-客户端进程相关" class="headerlink" title="3.2 客户端进程相关"></a>3.2 客户端进程相关</h3><p>　　客户端进程的代码编写十分简单，由于我们已经在服务端定义好了<code>main</code>包下关于<code>aidl</code>的相关配置，只需要将<code>aidl</code>包连同其子类一并Copy到我们客户端进程<code>main</code>包的下面，然后去<code>Rebuild</code>一下，就实现了IService接口的导入，剩下的就是主Activity的代码了：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"> <span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 尝试连接服务</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">attemptToConnectService</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    Intent intent = <span class="keyword">new</span> Intent();</span><br><span class="line">    <span class="comment">//设置服务的action</span></span><br><span class="line">    intent.setAction(<span class="string">"com.idx.demo.service"</span>);</span><br><span class="line">    <span class="comment">//设置服务器定义的包名</span></span><br><span class="line">    intent.setPackage(<span class="string">"com.idx.aidl"</span>);</span><br><span class="line">    <span class="comment">//开启服务</span></span><br><span class="line">    bindService(intent,conn,BIND_AUTO_CREATE);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> ServiceConnection conn = <span class="keyword">new</span> ServiceConnection() &#123;</span><br><span class="line"></span><br><span class="line">    IService iService;</span><br><span class="line">        </span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onServiceConnected</span><span class="params">(ComponentName name, IBinder service)</span> </span>&#123;</span><br><span class="line">        <span class="comment">//转为对应接口的实例对象</span></span><br><span class="line">        iService = IService.Stub.asInterface(service);</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            User user = iService.getUser();</span><br><span class="line">            Toast.makeText(getApplicationContext(),<span class="string">"拿到的数据是:"</span>+user.toString(),Toast.LENGTH_SHORT).show();</span><br><span class="line">        &#125; <span class="keyword">catch</span> (RemoteException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onServiceDisconnected</span><span class="params">(ComponentName name)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>　　从上面的代码我们可以看到，如果要获取服务端进程的<code>Service</code>, 我们除了要设置在服务端已经定义好的服务的<code>Action</code>之外，还需要将服务端进程的完整包名作为参数设置进去，只有这样我们才能成功通过此客户端进程去启动服务端的Service。接着调用<code>stub</code>的<code>asInterface</code>方法，将传递进来的IBinder实例对象转换为我们对应的IService对象，这样，就可以去获取对应的数据了。<br>　　接下来，我们在服务端设置好数据，再开启客户端进程，看看能否在客户端进程中获取到我们设置的数据：<br>　　<center><img src="https://raw.githubusercontent.com/sqHayden/sqHayden.github.io/master/avatar/aidl/aidl_other.gif" alt="AIDL"></center><br>　　可以看到，数据在客户端进程已经可以拿到了。好了，本篇解析到此结束。<br>　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　————学如逆水行舟，不进则退，技术更是如此。</p>
+
+    </article>
+    <!-- 前后页  -->
+    <ul class="post-paginator">
+        <li class="previous">
+            
+                <div class="prevSlogan">前一篇</div>
+                <a href= "/2018/06/15/recycler_bug/" title= RecyclerView子视图加载原理(源码解析) >
+                    <div class="prevTitle">RecyclerView子视图加载原理(源码解析)</div>
+                </a>
+            
+        </li>
+        <li class="next">
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+    <div id="lv-container" data-id="city" data-uid= MTAyMC8zNTU4OC8xMjEyNA==>
+        <script type="text/javascript">
+            (function (d, s) {
+                var j, e = d.getElementsByTagName(s)[0];
+                if (typeof LivereTower === 'function') { return; }
+                j = d.createElement(s);
+                j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+                j.async = true;
+
+                e.parentNode.insertBefore(j, e);
+            })(document, 'script');
+        </script>
+        <noscript>为正常使用来必力评论功能请激活JavaScript</noscript>
+    </div>
+
+<!-- City版安装代码已完成 -->
+    
+    
+    <!--PC版-->
+
+    <!--PC版-->
+
+
+    
+    <!-- 评论 -->
+</main>
+
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:1365233121@qq.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/sqhayden" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+            
+                <span class="iconfont-archer wechat" title=wechat>
+                  
+                  <img class="profile-qr" src="/assets/example_qr.jpg" />
+                </span>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+    </div>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- 不蒜子  -->
+    
+    <div class="busuanzi-container">
+        <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span>
+        </span>
+    </div>
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:50vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#AIDL实现不同进程间的通信"><span class="toc-number">1.</span> <span class="toc-text">AIDL实现不同进程间的通信</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-AIDL介绍"><span class="toc-number">1.1.</span> <span class="toc-text">1. AIDL介绍</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-AIDL适用场景"><span class="toc-number">1.2.</span> <span class="toc-text">2. AIDL适用场景</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-场景分析"><span class="toc-number">1.2.1.</span> <span class="toc-text">2.1 场景分析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-实现思路"><span class="toc-number">1.2.2.</span> <span class="toc-text">2.2 实现思路</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-AIDL实现进程间通信"><span class="toc-number">1.3.</span> <span class="toc-text">3. AIDL实现进程间通信</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-服务端进程相关"><span class="toc-number">1.3.1.</span> <span class="toc-text">3.1 服务端进程相关</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#3-1-1-包结构搭建"><span class="toc-number">1.3.1.1.</span> <span class="toc-text">3.1.1 包结构搭建</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-1-2-对象创建"><span class="toc-number">1.3.1.2.</span> <span class="toc-text">3.1.2 对象创建</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-1-3-aidl文件的创建"><span class="toc-number">1.3.1.3.</span> <span class="toc-text">3.1.3 aidl文件的创建</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-1-4-服务的创建"><span class="toc-number">1.3.1.4.</span> <span class="toc-text">3.1.4 服务的创建</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-客户端进程相关"><span class="toc-number">1.3.2.</span> <span class="toc-text">3.2 客户端进程相关</span></a></li></ol></li></ol></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">文章</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">标签</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">类别</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-archive"> Total : 13 </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2018 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/15</span><a class="archive-post-title" href= "/2018/06/15/recycler_bug/" >RecyclerView子视图加载原理(源码解析)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/14</span><a class="archive-post-title" href= "/2018/06/14/okhttp_picasso/" >Picasso+OkHttp动态加载网络图片</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/07</span><a class="archive-post-title" href= "/2018/06/07/scroll_view/" >ViewPager无限循环自动轮播图的实现</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/05</span><a class="archive-post-title" href= "/2018/06/05/tab_pager/" >Material Design系列实践(二)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/04</span><a class="archive-post-title" href= "/2018/06/04/drawer_navi/" >Material Design系列实践(一)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/26</span><a class="archive-post-title" href= "/2018/05/26/map-gaode/" >高德地图开发(环境搭建及地图显示)</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> Invalid date </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">Invalid date</span><a class="archive-post-title" href= "/2018/06/19/aidl/" >进程间通信之AIDL的实现</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2018 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/17</span><a class="archive-post-title" href= "/2018/05/17/listview/" >ListView控件复用详解</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/16</span><a class="archive-post-title" href= "/2018/05/16/opengl-es/" >OpenGL ES实现3D星空背景旋转立方体</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/16</span><a class="archive-post-title" href= "/2018/05/16/activity/" >Activity生命周期详解</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/12</span><a class="archive-post-title" href= "/2018/03/12/my-first-blog/" >博客启程之路</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/12</span><a class="archive-post-title" href= "/2018/03/12/README/" >[Untitled Post]</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/12</span><a class="archive-post-title" href= "/2018/03/12/hello-world/" >Hello World</a>
+        </li>
+    
+    </div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br/>
+    1、请确保node版本大于6.2<br/>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br/>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br/>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+    </div>
+</div> 
+
+    <script>
+    var siteMeta = {
+        root: '/',
+        author: 'hayden'
+    }
+</script>
+    <!-- busuanzi  -->
+    
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+    
+    </body>
+</html>
+
+
